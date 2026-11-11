@@ -1,24 +1,23 @@
-import { APITester } from "./APITester";
+import { createBrowserRouter, RouterProvider } from "react-router";
+import { Layout } from "./components/Layout";
+import { HomePage } from "./pages/HomePage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 import "./index.css";
 
-import logo from "./logo.svg";
-import reactLogo from "./react.svg";
+//All routes in the app. Add new pages under children
+const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <Layout />,
+        children: [
+            { index: true, element: <HomePage /> },
+            { path: "*", element: <NotFoundPage /> },
+        ],
+    },
+]);
 
 export function App() {
-  return (
-    <div className="app">
-      <div className="logo-container">
-        <img src={logo} alt="Bun Logo" className="logo bun-logo" />
-        <img src={reactLogo} alt="React Logo" className="logo react-logo" />
-      </div>
-
-      <h1>Bun + React</h1>
-      <p>
-        Edit <code>src/App.tsx</code> and save to test HMR
-      </p>
-      <APITester />
-    </div>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
