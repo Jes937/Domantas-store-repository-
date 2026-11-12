@@ -1,34 +1,13 @@
 import { serve } from "bun";
 import index from "./index.html";
 
+//Dev server for the React client
 const server = serve({
+  port:3000,
   routes: {
-    // Serve index.html for all unmatched routes.
+    //Send all routes to React Router
     "/*": index,
-
-    "/api/hello": {
-      async GET(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "GET",
-        });
-      },
-      async PUT(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "PUT",
-        });
-      },
-    },
-
-    "/api/hello/:name": async req => {
-      const name = req.params.name;
-      return Response.json({
-        message: `Hello, ${name}!`,
-      });
-    },
   },
-
   development: process.env.NODE_ENV !== "production" && {
     // Enable browser hot reloading in development
     hmr: true,
