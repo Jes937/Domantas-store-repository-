@@ -29,3 +29,6 @@ app.UseCors();
 app.MapControllers();
     
 app.Run();
+
+//Needed for intergration tests
+public partial class Program {}
