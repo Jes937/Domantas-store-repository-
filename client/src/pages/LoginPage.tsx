@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { FormEvent } from "react";
+import type { SubmitEvent } from "react";
 import "./LoginPage.css";
 
 //Login page - user logs
@@ -9,7 +9,7 @@ export function LoginPage() {
     const [password, setPassword] = useState("");
 
     //Runs when the form is submitted
-    function handleSubmit(event: FormEvent) {
+    function handleSubmit(event: SubmitEvent) {
         event.preventDefault();
         console.log("Login attempt for:", email);
     }
