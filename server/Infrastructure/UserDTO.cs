@@ -2,5 +2,5 @@
 
 namespace Infrastructure;
 
-[Facet (typeof(UserDB)) ]
+[Facet (typeof(UserDB),nameof(UserDB.Password)) ]
 public partial record UserSummary;

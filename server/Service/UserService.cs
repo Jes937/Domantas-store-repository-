@@ -10,13 +10,13 @@ namespace Service;
 
 public class UserService
 {
-    private readonly DataConnection _db;
+    private readonly UserDataBase _db;
     private readonly Argon2PasswordHasher _passwordHasher;
 
-    public UserService(DataConnection db, Argon2PasswordHasher passwordHaser)
+    public UserService(UserDataBase db, Argon2PasswordHasher passwordHasher)
     {
         _db = db;
-        _passwordHasher = passwordHaser;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<UserSummary> CreateuserAsync(
