@@ -1,4 +1,5 @@
-﻿using LinqToDB.Mapping;
+﻿using Infrastructure.Enums;
+using LinqToDB.Mapping;
 
 namespace Infrastructure;
 
@@ -25,8 +26,8 @@ public class UserDB
     [Column ("Password"), NotNull]
     public string Password { get; set; } = null!;
     
-    [Column ("UserRole"), NotNull]
-    public string UserRole { get; set; } = null!;
+    [Column ("Role"), NotNull]
+    public Roles Role { get; set; }
     
     [Column ("IsActive"), NotNull]
     public bool IsActive { get; set; } = true;
