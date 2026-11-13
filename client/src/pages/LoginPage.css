@@ -1,0 +1,94 @@
+/* Login page - Holiday Planner design */
+.login-card {
+    width: 420px;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background: #ffffff;
+    border: 1px solid #dde2e8;
+    border-radius: 12px;
+    color: #16202a;
+    text-align: left;
+}
+
+.login-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.login-card h1 {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.2;
+}
+
+.login-intro,
+.login-note {
+    margin: 0;
+    color: #4a5663;
+    line-height: 1.5;
+}
+
+.login-intro {
+    font-size: 16px;
+}
+
+.login-note {
+    font-size: 14px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.login-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.login-field label {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.login-field input {
+    height: 48px;
+    box-sizing: border-box;
+    padding: 0 14px;
+    font: inherit;
+    font-size: 16px;
+    color: #16202a;
+    background: #ffffff;
+    border: 1px solid #8a95a1;
+    border-radius: 8px;
+}
+
+.login-button {
+    height: 48px;
+    border: 0;
+    border-radius: 8px;
+    background: #0b5c7a;
+    color: #ffffff;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.login-button:hover {
+    background: #083f54;
+}
+
+.login-field input:focus-visible,
+.login-button:focus-visible {
+    outline: 3px solid #0b5c7a;
+    outline-offset: 2px;
+}
