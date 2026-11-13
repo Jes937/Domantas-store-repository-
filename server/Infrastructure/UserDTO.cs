@@ -1,6 +1,6 @@
-﻿namespace Infrastructure;
+﻿using Facet;
 
-public class UserDTO
-{
-    
-}
+namespace Infrastructure;
+
+[Facet (typeof(UserDB)) ]
+public partial record UserSummary;
