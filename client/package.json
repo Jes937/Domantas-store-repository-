@@ -8,7 +8,8 @@
     "build": "bun build ./src/index.html --outdir=dist --sourcemap --target=browser --minify --define:process.env.NODE_ENV='\"production\"' --env='BUN_PUBLIC_*'",
     "start": "NODE_ENV=production bun src/index.ts",
     "typecheck": "tsc --noEmit",
-    "generate-client": "swagger-typescript-api generate -p http://localhost:5221/swagger/v1/swagger.json -o ./src/api -n Api.ts --module-name-first-tag"
+    "generate-client": "swagger-typescript-api generate -p http://localhost:5221/swagger/v1/swagger.json -o ./src/api -n Api.ts --module-name-first-tag",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "react": "^19",
@@ -16,6 +17,7 @@
     "react-router": "^8.5.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "@types/bun": "latest",
     "@types/react": "^19",
     "@types/react-dom": "^19",
