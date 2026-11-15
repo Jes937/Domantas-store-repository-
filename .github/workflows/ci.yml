@@ -1,0 +1,51 @@
+name: CI
+
+# Runs on push to main and on pull requests that target main
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Unit + integration tests (.NET)
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Run unit and integration tests
+        run: dotnet test server/server.slnx
+
+  # Typecheck + E2E tests (React + Playwright)
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # .NET is needed because Playwright starts the API
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install packages
+        working-directory: client
+        run: bun install
+
+      - name: Typecheck
+        working-directory: client
+        run: bun run typecheck
+
+      - name: Install Playwright browser
+        working-directory: client
+        run: bun x playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: client
+        run: bun run test:e2e 
