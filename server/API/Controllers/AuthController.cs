@@ -1,16 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
+using Service;
 
 namespace API.Controllers;
 
 //handles Login
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController(AuthService authService) : ControllerBase
 {
     [HttpPost("Login")]
-    public ActionResult<LoginResponse> Login(LoginRequest loginRequest)
+    public async Task<ActionResult<LoginResponse>> Login(LoginRequest loginRequest)
     {
-        return Unauthorized("Wrong email or password");
+        var user = await authService.CheckLoginAsync(loginRequest.Email, loginRequest.Password);
+        
+        //if email or password is wrong
+        if (user is null) 
+            return Unauthorized("Wrong email or password");
+        
+        //token will come soon
+        return Ok(new LoginResponse("token-comes-soon"));
     }
 }
 

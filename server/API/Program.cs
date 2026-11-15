@@ -1,5 +1,8 @@
 using Infrastructure;
+using Infrastructure.Enums;
 using LinqToDB;
+using Security.Services.Security;
+using Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +12,8 @@ var options = new DataOptions().UseSQLite(
 
 builder.Services.AddSingleton(new DataOptions<UserDataBase>(options));
 builder.Services.AddScoped<UserDataBase>();
+builder.Services.AddScoped<Argon2PasswordHasher>();
+builder.Services.AddScoped<AuthService>();
 
 // Enable controllers
 builder.Services.AddControllers();
@@ -36,6 +41,23 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<UserDataBase>();
     Seeder.Seed(db);
+    
+    //For development only: add a test user, so there is someone to log in as
+    if (app.Environment.IsDevelopment() && !db.GetTable<UserDB>().Any())
+    {
+        var hasher = scope.ServiceProvider.GetRequiredService<Argon2PasswordHasher>();
+
+        db.Insert(new UserDB
+        {
+            UserId = Guid.NewGuid().ToString(),
+            UserName = "Test Admin",
+            Email = "admin@test.dk",
+            Password = hasher.HashAndSaltPassword("Password123"),
+            Role = Roles.Admin,
+            IsActive = true,
+            StartDate = DateOnly.FromDateTime(DateTime.Today)
+        });
+    }
 }
 
 // Swagger UI
