@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Service;
+using LoginApi.Services;
 
 namespace API.Controllers;
 
 //handles Login
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(AuthService authService) : ControllerBase
+public class AuthController(AuthService authService, TokenServices tokenServices) : ControllerBase
 {
     [HttpPost("Login")]
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest loginRequest)
@@ -17,8 +18,9 @@ public class AuthController(AuthService authService) : ControllerBase
         if (user is null) 
             return Unauthorized("Wrong email or password");
         
-        //token will come soon
-        return Ok(new LoginResponse("token-comes-soon"));
+        //Login Granted : create token for this user
+        var token = tokenServices.CreateToken(user);
+        return Ok(new LoginResponse(token));
     }
 }
 

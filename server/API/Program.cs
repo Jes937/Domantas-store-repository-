@@ -3,6 +3,7 @@ using Infrastructure.Enums;
 using LinqToDB;
 using Security.Services.Security;
 using Service;
+using LoginApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,7 @@ builder.Services.AddSingleton(new DataOptions<UserDataBase>(options));
 builder.Services.AddScoped<UserDataBase>();
 builder.Services.AddScoped<Argon2PasswordHasher>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<TokenServices>();
 
 // Enable controllers
 builder.Services.AddControllers();
