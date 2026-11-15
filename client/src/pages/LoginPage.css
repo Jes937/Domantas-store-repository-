@@ -92,3 +92,14 @@
     outline: 3px solid #0b5c7a;
     outline-offset: 2px;
 }
+
+.login-error {
+    margin: 0;
+    padding: 14px 16px;
+    background: #fdecea;
+    border: 1px solid #b42318;
+    border-radius: 8px;
+    color: #7a1a12;
+    font-size: 15px;
+    line-height: 1.5;
+}

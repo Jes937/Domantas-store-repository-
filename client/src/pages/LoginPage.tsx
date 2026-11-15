@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { SubmitEvent } from "react";
+import { useNavigate } from "react-router";
+import { api } from "../api/client";
 import "./LoginPage.css";
 
 //Login page - user logs
@@ -7,11 +9,31 @@ export function LoginPage() {
     //What the user has typed in the two fields
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    //Error message. Null is no error
+    const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     //Runs when the form is submitted
-    function handleSubmit(event: SubmitEvent) {
+    async function handleSubmit(event: SubmitEvent) {
         event.preventDefault();
-        console.log("Login attempt for:", email);
+        setError(null);
+        
+        try {
+            //Ask API to log in
+            const response = await api.auth.authLogin({ email, password });
+            
+            //Success: keep the token and go to front page
+            localStorage.setItem("token", response.data.token ?? "");
+            navigate("/");
+        } catch (err) {
+            //401 means API rejected login. Anything else is technical problem
+            const status = (err as { status?:number }).status;
+            setError(
+                status === 401
+                ? "Wrong email or password. Try again."
+                : "Could not reach the server. Try again later."
+            );
+        }
     }
 
     return (
@@ -20,6 +42,8 @@ export function LoginPage() {
                 <h1>Log in</h1>
                 <p className="login-intro">Use your work email to see your holiday.</p>
             </div>
+
+            {error && <p className="login-error" role="alert">{error}</p>}
 
             <form className="login-form" onSubmit={handleSubmit}>
                 <div className="login-field">
