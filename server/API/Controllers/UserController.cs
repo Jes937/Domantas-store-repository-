@@ -20,10 +20,9 @@ public class UserController(UserService userService) : ControllerBase
             ? role
             : Roles.User;
 
-    // Admin can manage everyone except admins
+    // Admin can manage everyone
     private bool CanManage(Roles targetRole) =>
-        CurrentRole == Roles.Admin &&
-        targetRole != Roles.Admin;
+        CurrentRole == Roles.Admin;
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
@@ -49,11 +48,46 @@ public class UserController(UserService userService) : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(string id)
     {
-        var deleted = await userService.DeleteUserAsync(id);
+        var target = await userService.GetUserAsync(id);
+        if (target is null)
+            return NotFound();
 
-        if (!deleted)
+        if (!CanManage(target.Role))
+            return Forbid();
+
+        await userService.DeleteUserAsync(id);
+        return NoContent();
+    }
+    
+    // UPDATE 
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Update(
+        string id,
+        string userName,
+        Roles role)
+    {
+        var target = await userService.GetUserAsync(id);
+        if (target is null)
+            return NotFound();
+
+        // Check both the current role and the new role
+        if (!CanManage(target.Role) || !CanManage(role))
+            return Forbid();
+
+        var updated = await userService.UpdateUserAsync(id, userName, role);
+
+        if (!updated)
             return NotFound();
 
         return NoContent();
+    }
+    
+    // READ all
+    [HttpGet]
+    public async Task<ActionResult<List<UserSummary>>> GetAll()
+    {
+        var users = await userService.GetAllUsersAsync();
+        return Ok(users);
     }
 }
