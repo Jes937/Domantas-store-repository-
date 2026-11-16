@@ -1,15 +1,10 @@
 using Infrastructure;
 using Infrastructure.Enums;
 using LinqToDB;
-<<<<<<< HEAD
-using Security.Services.Security;
-using Service;
-using LoginApi.Services;
-=======
 using LinqToDB.Data;
 using Security.Services.Security;
 using Service;
->>>>>>> UserCRUD
+using LoginApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,12 +14,12 @@ var dbOptions = new DataOptions().UseSQLite(
 
 builder.Services.AddSingleton(new DataOptions<UserDataBase>(dbOptions));
 builder.Services.AddScoped<UserDataBase>();
+builder.Services.AddScoped<DataConnection>(sp => sp.GetRequiredService<UserDataBase>());
+
+// Services
 builder.Services.AddScoped<Argon2PasswordHasher>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenServices>();
-
-builder.Services.AddScoped<DataConnection>(sp => sp.GetRequiredService<UserDataBase>());
-builder.Services.AddScoped<Argon2PasswordHasher>();
 builder.Services.AddScoped<UserService>();
 
 // Authentication (JWT)
@@ -77,8 +72,8 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<UserDataBase>();
     Seeder.Seed(db);
-    
-    //For development only: add a test user, so there is someone to log in as
+
+    // For development only: add a test user, so there is someone to log in as
     if (app.Environment.IsDevelopment() && !db.GetTable<UserDB>().Any())
     {
         var hasher = scope.ServiceProvider.GetRequiredService<Argon2PasswordHasher>();
