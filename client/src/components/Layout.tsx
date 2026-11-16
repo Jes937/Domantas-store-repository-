@@ -1,7 +1,11 @@
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Outlet, useLocation } from "react-router";
 
 //Shared layout for all pages
 export function Layout() {
+    //page user is on right now
+    const location = useLocation();
+    const onLoginPage = location.pathname === "/login";
+    
     return (
         <div className="app">
             <header className="app-header">
@@ -22,10 +26,14 @@ export function Layout() {
                     <path d="M16 3v4" />
                 </svg>
                 <span className="app-name">Holiday Planner</span>
+                
+                {!onLoginPage && (
                 <nav className="app-nav">
                     <NavLink to="/">Home</NavLink>
                     <NavLink to="/login">Log in</NavLink>
                 </nav>
+                )}
+                
             </header>
             <main className="app-main">
                 {/* The current page is shown here */}
