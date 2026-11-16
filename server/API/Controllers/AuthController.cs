@@ -22,3 +22,5 @@ public class AuthController(IConfiguration config) : ControllerBase
         return Ok(new JwtSecurityTokenHandler().WriteToken(token));
     }
 }
+
+//Hello
