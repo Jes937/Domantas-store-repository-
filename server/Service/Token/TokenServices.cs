@@ -19,7 +19,7 @@ public class TokenServices(IConfiguration config)
             Subject = new ClaimsIdentity([
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
+                new Claim("role", user.Role.ToString())
             ]),
             Issuer = config["Jwt:Issuer"],
             Expires = DateTime.UtcNow.AddHours(1),
