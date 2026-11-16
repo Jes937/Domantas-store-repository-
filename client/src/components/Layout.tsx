@@ -8,6 +8,7 @@ export function Layout() {
                 <strong>Business Esbjerg - Ferie</strong>
                 <nav>
                     <NavLink to="/">Home</NavLink>
+                    <NavLink to="/login">Log in</NavLink>
                 </nav>
             </header>
             <main>

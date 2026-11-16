@@ -10,10 +10,110 @@
  * ---------------------------------------------------------------
  */
 
+export enum LedgerEntryType {
+  Accrual = 0,
+  Taken = 1,
+  Transfer = 2,
+  Payout = 3,
+  Adjustment = 4,
+}
+
+export enum Roles {
+  User = 0,
+  Accountant = 1,
+  Admin = 2,
+}
+
+export enum RequestStatus {
+  Pending = 0,
+  Approved = 1,
+  Rejected = 2,
+  Canceled = 3,
+}
+
+export enum HolidayAccount {
+  Week1To5 = 0,
+  Week6 = 1,
+}
+
+export interface LoginResponse {
+  token?: string;
+}
+
+export interface LoginRequest {
+  email?: string;
+  password?: string;
+}
+
 export interface HealthResponse {
   status?: string;
   /** @format date-time */
   serverTime?: string;
+}
+
+export interface UserSummary {
+  userId?: string;
+  ledgerEntries?: LedgerEntriesDB[];
+  holidayRequest?: HolidayRequestDB[];
+  userName?: string;
+  email?: string;
+  role?: Roles;
+  isActive?: boolean;
+  /** @format date */
+  startDate?: string;
+  /** @format date */
+  endDate?: string;
+}
+
+export interface LedgerEntriesDB {
+  entrytId?: string;
+  userId?: string;
+  user?: UserDB;
+  account?: HolidayAccount;
+  entryType?: LedgerEntryType;
+  /** @format decimal */
+  hours?: number;
+  /** @format date */
+  entryDate?: string;
+  /** @format date */
+  expiresOn?: string;
+  requestId?: string | null;
+  note?: string | null;
+}
+
+export interface UserDB {
+  userId?: string;
+  ledgerEntries?: LedgerEntriesDB[];
+  holidayRequest?: HolidayRequestDB[];
+  userName?: string;
+  email?: string;
+  password?: string;
+  role?: Roles;
+  isActive?: boolean;
+  /** @format date */
+  startDate?: string;
+  /** @format date */
+  endDate?: string;
+}
+
+export interface HolidayRequestDB {
+  requestId?: string;
+  userId?: string;
+  user?: UserDB;
+  account?: HolidayAccount;
+  /** @format date */
+  startDate?: string;
+  /** @format date */
+  endDate?: string;
+  /** @format decimal */
+  hours?: number;
+  status?: RequestStatus;
+  /** @format date-time */
+  submitted?: string;
+  decidedBy?: string | null;
+  /** @format date-time */
+  decided?: string | null;
+  decisionNote?: string | null;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -279,6 +379,24 @@ export class HttpClient<SecurityDataType = unknown> {
 export class Api<
   SecurityDataType extends unknown,
 > extends HttpClient<SecurityDataType> {
+  auth = {
+    /**
+     * No description
+     *
+     * @tags Auth
+     * @name AuthLogin
+     * @request POST:/api/Auth/Login
+     */
+    authLogin: (data: LoginRequest, params: RequestParams = {}) =>
+      this.request<LoginResponse, any>({
+        path: `/api/Auth/Login`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
   health = {
     /**
      * No description
@@ -292,6 +410,45 @@ export class Api<
         path: `/api/Health`,
         method: "GET",
         format: "json",
+        ...params,
+      }),
+  };
+  user = {
+    /**
+     * No description
+     *
+     * @tags User
+     * @name UserCreate
+     * @request POST:/api/users
+     */
+    userCreate: (
+      query?: {
+        userName?: string;
+        password?: string;
+        email?: string;
+        role?: Roles;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<UserSummary, any>({
+        path: `/api/users`,
+        method: "POST",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags User
+     * @name UserDelete
+     * @request DELETE:/api/users/{id}
+     */
+    userDelete: (id: string, params: RequestParams = {}) =>
+      this.request<Blob, any>({
+        path: `/api/users/${id}`,
+        method: "DELETE",
         ...params,
       }),
   };
