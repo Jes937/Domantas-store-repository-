@@ -1,36 +1,70 @@
 using Infrastructure;
 using Infrastructure.Enums;
 using LinqToDB;
+<<<<<<< HEAD
 using Security.Services.Security;
 using Service;
 using LoginApi.Services;
+=======
+using LinqToDB.Data;
+using Security.Services.Security;
+using Service;
+>>>>>>> UserCRUD
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Database
-var options = new DataOptions().UseSQLite(
-    Environment.GetEnvironmentVariable("DB") ?? "Data Source=dev.db");
+var dbOptions = new DataOptions().UseSQLite(
+    Environment.GetEnvironmentVariable("DB") ?? "Data Source=holiday.db");
 
-builder.Services.AddSingleton(new DataOptions<UserDataBase>(options));
+builder.Services.AddSingleton(new DataOptions<UserDataBase>(dbOptions));
 builder.Services.AddScoped<UserDataBase>();
 builder.Services.AddScoped<Argon2PasswordHasher>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenServices>();
 
+builder.Services.AddScoped<DataConnection>(sp => sp.GetRequiredService<UserDataBase>());
+builder.Services.AddScoped<Argon2PasswordHasher>();
+builder.Services.AddScoped<UserService>();
+
+// Authentication (JWT)
+builder.Services.AddAuthentication("Bearer").AddJwtBearer(o =>
+{
+    o.MapInboundClaims = false;
+    o.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+        RoleClaimType = "role"
+    };
+});
+builder.Services.AddAuthorization();
+
 // Enable controllers
 builder.Services.AddControllers();
 
-// Swagger documentation (NSwag)
+// Swagger documentation (NSwag) with an Authorize button
 builder.Services.AddOpenApiDocument(config =>
 {
     config.Title = "Business Esbjerg Holiday API";
+    config.AddSecurity("JWT", Enumerable.Empty<string>(), new NSwag.OpenApiSecurityScheme
+    {
+        Type = NSwag.OpenApiSecuritySchemeType.ApiKey,
+        Name = "Authorization",
+        In = NSwag.OpenApiSecurityApiKeyLocation.Header,
+        Description = "Type: Bearer {token}"
+    });
+    config.OperationProcessors.Add(
+        new NSwag.Generation.Processors.Security.AspNetCoreOperationSecurityScopeProcessor("JWT"));
 });
 
 // Allow the React client to call the API
 var clientOrigin = builder.Configuration["ClientOrigin"] ?? "http://localhost:3000";
-builder.Services.AddCors(options =>
+builder.Services.AddCors(corsOptions =>
 {
-    options.AddDefaultPolicy(policy =>
+    corsOptions.AddDefaultPolicy(policy =>
         policy.WithOrigins(clientOrigin)
             .AllowAnyHeader()
             .AllowAnyMethod());
@@ -67,6 +101,8 @@ app.UseOpenApi();
 app.UseSwaggerUi();
 
 app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

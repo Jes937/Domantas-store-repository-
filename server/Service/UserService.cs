@@ -3,7 +3,6 @@ using Infrastructure;
 using Infrastructure.Enums;
 using LinqToDB;
 using LinqToDB.Async;
-using LinqToDB.Data;
 using Security.Services.Security;
 
 namespace Service;
@@ -86,11 +85,13 @@ public class UserService
         string userId,
         CancellationToken ct = default)
     {
-        var deleted = await _db.GetTable<UserDB>()
-            .Where(x => x.UserId == userId)
-            .DeleteAsync(ct);
+        var updated = await _db.GetTable<UserDB>()
+            .Where(x => x.UserId == userId && x.IsActive)
+            .Set(x => x.IsActive, false)
+            .Set(x => x.EndDate, DateOnly.FromDateTime(DateTime.Today))
+            .UpdateAsync(ct);
 
-        return deleted > 0;
+        return updated > 0;
     }
 
     public async Task<List<UserSummary>> GetAllUsersAsync(
