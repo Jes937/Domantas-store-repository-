@@ -6,7 +6,7 @@ namespace Infrastructure;
 public class DatesDB
 {
     [PrimaryKey(0), Column("UserId")] 
-    public string UserId { get; set; } = null;
+    public string UserId { get; set; } = null!;
     
     [PrimaryKey(1), Column("EffectiveFrom")]
     public DateOnly EffectiveFrom { get; set; }

@@ -18,14 +18,14 @@ public class UserController(UserService userService) : ControllerBase
             true,
             out var role)
             ? role
-            : Roles.User;
+            : Roles.Employee;
 
     // Admin can manage everyone
     private bool CanManage(Roles targetRole) =>
-        CurrentRole == Roles.Admin;
+        CurrentRole == Roles.SystemOwner;
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "SystemOwner")]
     public async Task<ActionResult<UserSummary>> Create(
         string userName,
         string password,
@@ -35,17 +35,30 @@ public class UserController(UserService userService) : ControllerBase
         if (!CanManage(role))
             return Forbid();
 
-        var user = await userService.CreateuserAsync(
-            userName,
-            password,
-            email,
-            role);
+        try
+        {
+            var user = await userService.CreateuserAsync(
+                userName,
+                password,
+                email,
+                role);
 
-        return Ok(user);
+            return Ok(user);
+        }
+        catch (ArgumentException ex)
+        {
+            //e.g. password too short
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            //e.g. there is already an accountant
+            return Conflict(ex.Message);
+        }
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "SystemOwner")]
     public async Task<IActionResult> Delete(string id)
     {
         var target = await userService.GetUserAsync(id);
@@ -61,7 +74,7 @@ public class UserController(UserService userService) : ControllerBase
     
     // UPDATE 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "SystemOwner")]
     public async Task<IActionResult> Update(
         string id,
         string userName,
@@ -75,16 +88,25 @@ public class UserController(UserService userService) : ControllerBase
         if (!CanManage(target.Role) || !CanManage(role))
             return Forbid();
 
-        var updated = await userService.UpdateUserAsync(id, userName, role);
+        try
+        {
+            var updated = await userService.UpdateUserAsync(id, userName, role);
 
-        if (!updated)
-            return NotFound();
+            if (!updated)
+                return NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            // e.g. there is already an accountant
+            return Conflict(ex.Message);
+        }
 
         return NoContent();
     }
     
     // READ all
     [HttpGet]
+    [Authorize(Roles = "Accountant,SystemOwner")]
     public async Task<ActionResult<List<UserSummary>>> GetAll()
     {
         var users = await userService.GetAllUsersAsync();

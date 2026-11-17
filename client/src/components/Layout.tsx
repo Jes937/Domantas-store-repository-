@@ -1,12 +1,12 @@
 
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 
-
+//Shared layout for all pages: header with navigation and logout
 export function Layout() {
+    //The page the user is on right now
     const location = useLocation();
     const navigate = useNavigate();
-
-
+    
     const onLoginPage = location.pathname === "/login";
 
     // Logout user
@@ -49,7 +49,7 @@ export function Layout() {
             </header>
 
             <main className="app-main">
-                {}
+                {/* The current page is shown here */}
                 <Outlet />
             </main>
         </div>

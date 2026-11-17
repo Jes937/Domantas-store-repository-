@@ -51,3 +51,34 @@ cd client
 bun x playwright install chromium   # first time only
 bun run test:e2e
 ```
+
+## Authorization
+
+There are three roles. Every person has an Employee account. There is exactly one active Accountant and one active System owner account, each with its own login.
+
+| Role | Can |
+|---|---|
+| Employee | Log in and see their own data |
+| Accountant | Everything an Employee can, plus see all users and approve/decline holiday requests |
+| System owner | Everything an Employee can, plus see all users and create, update and deactivate users |
+
+| Endpoint | Who can call it |
+|---|---|
+| `POST /api/Auth/Login` | Everyone |
+| `GET /api/Health` | Everyone |
+| `GET /api/weeks` | Logged in users |
+| `GET /api/users` | Accountant, System owner |
+| `POST /api/users` | System owner |
+| `PUT /api/users/{id}` | System owner |
+| `DELETE /api/users/{id}` | System owner |
+
+The rules are tested in `server/Tests/Integration/AuthorizationTests.cs`.
+
+### Test users (development only)
+Created when the API runs in Development with an empty database. Password for all: `Password123`
+
+| Email | Role |
+|---|---|
+| employee@businessesbjerg.com | Employee |
+| accountant@businessesbjerg.com | Accountant |
+| owner@businessesbjerg.com | System owner |
