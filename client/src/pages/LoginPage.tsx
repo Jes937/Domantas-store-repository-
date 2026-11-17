@@ -28,7 +28,7 @@ export function LoginPage() {
             );
 
 
-            navigate("/");
+            navigate("home");
         } catch (err) {
             console.error("Login failed", err);
 
