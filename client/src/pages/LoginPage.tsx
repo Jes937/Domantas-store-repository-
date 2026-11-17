@@ -4,34 +4,40 @@ import { useNavigate } from "react-router";
 import { api } from "../api/client";
 import "./LoginPage.css";
 
-//Login page - user logs
+// Login page - user logs in
 export function LoginPage() {
-    //What the user has typed in the two fields
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    //Error message. Null is no error
     const [error, setError] = useState<string | null>(null);
+
     const navigate = useNavigate();
 
-    //Runs when the form is submitted
     async function handleSubmit(event: SubmitEvent) {
         event.preventDefault();
         setError(null);
-        
+
         try {
-            //Ask API to log in
-            const response = await api.auth.authLogin({ email, password });
-            
-            //Success: keep the token and go to front page
-            localStorage.setItem("token", response.data.token ?? "");
-            navigate("/");
+            const response = await api.auth.authLogin({
+                email,
+                password,
+            });
+
+            localStorage.setItem(
+                "token",
+                response.data.token ?? ""
+            );
+
+
+            navigate("/home");
         } catch (err) {
-            //401 means API rejected login. Anything else is technical problem
-            const status = (err as { status?:number }).status;
+            console.error("Login failed", err);
+
+            const status = (err as { status?: number }).status;
+
             setError(
                 status === 401
-                ? "Wrong email or password. Try again."
-                : "Could not reach the server. Try again later."
+                    ? "Wrong email or password. Try again."
+                    : "Could not reach the server. Try again later."
             );
         }
     }
@@ -40,14 +46,24 @@ export function LoginPage() {
         <section className="login-card">
             <div className="login-heading">
                 <h1>Log in</h1>
-                <p className="login-intro">Use your work email to see your holiday.</p>
+                <p className="login-intro">
+                    Use your work email to see your holiday.
+                </p>
             </div>
 
-            {error && <p className="login-error" role="alert">{error}</p>}
+            {error && (
+                <p className="login-error" role="alert">
+                    {error}
+                </p>
+            )}
 
-            <form className="login-form" onSubmit={handleSubmit}>
+            <form
+                className="login-form"
+                onSubmit={handleSubmit}
+            >
                 <div className="login-field">
                     <label htmlFor="email">Email</label>
+
                     <input
                         id="email"
                         type="email"
@@ -55,26 +71,38 @@ export function LoginPage() {
                         autoComplete="username"
                         placeholder="name@company.dk"
                         value={email}
-                        onChange={event => setEmail(event.target.value)}
+                        onChange={(event) =>
+                            setEmail(event.target.value)
+                        }
                     />
                 </div>
 
                 <div className="login-field">
                     <label htmlFor="password">Password</label>
+
                     <input
                         id="password"
                         type="password"
                         required
                         autoComplete="current-password"
                         value={password}
-                        onChange={event => setPassword(event.target.value)}
+                        onChange={(event) =>
+                            setPassword(event.target.value)
+                        }
                     />
                 </div>
 
-                <button className="login-button" type="submit">Log in</button>
+                <button
+                    className="login-button"
+                    type="submit"
+                >
+                    Log in
+                </button>
             </form>
 
-            <p className="login-note">No account? Your administrator creates it for you.</p>
+            <p className="login-note">
+                No account? Your administrator creates it for you.
+            </p>
         </section>
     );
 }
