@@ -73,21 +73,31 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<UserDataBase>();
     Seeder.Seed(db);
 
-    // For development only: add a test user, so there is someone to log in as
+    // Development only: one test user of each role, so there is someone to log in as
     if (app.Environment.IsDevelopment() && !db.GetTable<UserDB>().Any())
     {
         var hasher = scope.ServiceProvider.GetRequiredService<Argon2PasswordHasher>();
 
-        db.Insert(new UserDB
+        var testUsers = new[]
         {
-            UserId = Guid.NewGuid().ToString(),
-            UserName = "Test Admin",
-            Email = "admin@test.dk",
-            Password = hasher.HashAndSaltPassword("Password123"),
-            Role = Roles.Admin,
-            IsActive = true,
-            StartDate = DateOnly.FromDateTime(DateTime.Today)
-        });
+            ("Test Employee", "employee@businessesbjerg.com", Roles.Employee),
+            ("Test Accountant", "accountant@businessesbjerg.com", Roles.Accountant),
+            ("Test System Owner", "owner@businessesbjerg.com", Roles.SystemOwner),
+        };
+
+        foreach (var (name, email, role) in testUsers)
+        {
+            db.Insert(new UserDB
+            {
+                UserId = Guid.NewGuid().ToString(),
+                UserName = name,
+                Email = email,
+                Password = hasher.HashAndSaltPassword("Password123"),
+                Role = role,
+                IsActive = true,
+                StartDate = DateOnly.FromDateTime(DateTime.Today)
+            });
+        }
     }
 }
 
