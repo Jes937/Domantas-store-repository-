@@ -1,19 +1,28 @@
-
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { Layout } from "./components/Layout";
 import { HomePage } from "./pages/HomePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { LoginPage } from "./pages/LoginPage";
+
 import SchedulePage from "./pages/SchedulePage";
 import "./index.css";
+import {RequireLogin} from "@/RequireLogin.tsx";
 
+//All routes in the app. Pages that need a login go inside RequireLogin
 const router = createBrowserRouter([
     {
+        path: "/",
+        element: <Layout />,
         children: [
-            { index: true, element: <LoginPage /> },
             { path: "login", element: <LoginPage /> },
-            { path: "home", element: <HomePage /> },
-            { path: "users/:userId/schedule", element: <SchedulePage /> },
+            {
+                element: <RequireLogin />,
+                children: [
+                    { index: true, element: <HomePage /> },
+
+                    { path: "users/:userId/schedule", element: <SchedulePage /> },
+                ],
+            },
             { path: "*", element: <NotFoundPage /> },
         ],
     },
