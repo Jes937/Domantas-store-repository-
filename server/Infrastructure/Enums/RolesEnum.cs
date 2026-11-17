@@ -2,7 +2,7 @@
 
 public enum Roles
 {
-    User = 0,
+    Employee = 0,
     Accountant = 1,
-    Admin = 2
+    SystemOwner = 2
 }

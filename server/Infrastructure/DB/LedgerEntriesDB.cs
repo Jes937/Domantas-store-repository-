@@ -7,7 +7,7 @@ namespace Infrastructure;
 public sealed class LedgerEntriesDB
 {
     [PrimaryKey] 
-    public string EntrytId { get; set; } = null!;
+    public string EntryId { get; set; } = null!;
 
     [Column("UserId"), NotNull] 
     public string UserId { get; set; } = null!;
@@ -28,7 +28,7 @@ public sealed class LedgerEntriesDB
     public DateOnly EntryDate { get; set; }
     
     [Column ("ExpiresOn"), Nullable]
-    public DateOnly  ExpiresOn { get; set; }
+    public DateOnly? ExpiresOn { get; set; }
     
     [Column ("RequestId"), Nullable]
     public string? RequestId { get; set; }

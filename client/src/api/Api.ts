@@ -11,9 +11,9 @@
  */
 
 export enum Roles {
-  User = 0,
+  Employee = 0,
   Accountant = 1,
-  Admin = 2,
+  SystemOwner = 2,
 }
 
 export interface LoginResponse {
@@ -40,7 +40,18 @@ export interface UserSummary {
   /** @format date */
   startDate?: string;
   /** @format date */
-  endDate?: string;
+  endDate?: string | null;
+}
+
+export interface WeekDto {
+  /** @format int32 */
+  week?: number;
+  /** @format int32 */
+  year?: number;
+  /** @format date */
+  monday?: string;
+  /** @format date */
+  sunday?: string;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -425,6 +436,31 @@ export class Api<
         method: "PUT",
         query: query,
         secure: true,
+        ...params,
+      }),
+  };
+  week = {
+    /**
+     * No description
+     *
+     * @tags Week
+     * @name WeekGet
+     * @request GET:/api/weeks
+     * @secure
+     */
+    weekGet: (
+      query?: {
+        /** @format date */
+        date?: string | null;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<WeekDto, any>({
+        path: `/api/weeks`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
         ...params,
       }),
   };

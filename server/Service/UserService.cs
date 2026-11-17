@@ -38,6 +38,11 @@ public class UserService
         if (await _db.GetTable<UserDB>().AnyAsync(x => x.UserName == username, ct))
             throw new InvalidOperationException("User with the same username already exists");
         
+        // There can only be one active accountant and one active system owner
+        if (role != Roles.Employee &&
+            await _db.GetTable<UserDB>().AnyAsync(x => x.Role == role && x.IsActive, ct))
+            throw new InvalidOperationException($"There is already an active {role} account");
+        
         var user = new UserDB
         {
             UserId = Guid.NewGuid().ToString(),
@@ -71,6 +76,11 @@ public class UserService
         CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(userName);
+        
+        // Same rule when changing role - but don't count the user being updated
+        if (role != Roles.Employee &&
+            await _db.GetTable<UserDB>().AnyAsync(x => x.Role == role && x.IsActive && x.UserId != userId, ct))
+            throw new InvalidOperationException($"There is already an active {role} account");
 
         var updated = await _db.GetTable<UserDB>()
             .Where(x => x.UserId == userId)

@@ -1,11 +1,20 @@
-import { NavLink, Outlet, useLocation } from "react-router";
 
-//Shared layout for all pages
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
+
+//Shared layout for all pages: header with navigation and logout
 export function Layout() {
-    //page user is on right now
+    //The page the user is on right now
     const location = useLocation();
-    const onLoginPage = location.pathname === "/login";
+    const navigate = useNavigate();
     
+    const onLoginPage = location.pathname === "/login";
+
+    // Logout user
+    function handleLogout() {
+        localStorage.removeItem("token");
+        navigate("/login", { replace: true });
+    }
+
     return (
         <div className="app">
             <header className="app-header">
@@ -25,17 +34,20 @@ export function Layout() {
                     <path d="M8 3v4" />
                     <path d="M16 3v4" />
                 </svg>
+
                 <span className="app-name">Holiday Planner</span>
-                
+
                 {!onLoginPage && (
-                <nav className="app-nav">
-                    <NavLink to="/">Home</NavLink>
-                    <NavLink to="/login">Log in</NavLink>
-                    <NavLink to="/employees">Employees</NavLink>
-                </nav>
+                    <nav className="app-nav">
+                        <NavLink to="/">Home</NavLink>
+                        <NavLink to="/employees">Employees</NavLink>
+                        <button onClick={handleLogout}>
+                            Logout
+                        </button>
+                    </nav>
                 )}
-                
             </header>
+
             <main className="app-main">
                 {/* The current page is shown here */}
                 <Outlet />
