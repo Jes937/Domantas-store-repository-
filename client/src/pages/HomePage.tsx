@@ -1,6 +1,5 @@
-
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 
 import { api } from "../api/client";
 import type { HealthResponse } from "../api/Api";
@@ -10,8 +9,6 @@ export function HomePage() {
     const [health, setHealth] = useState<HealthResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const navigate = useNavigate();
-
     // Call the API once the page loads.
     useEffect(() => {
         api.health
@@ -19,12 +16,6 @@ export function HomePage() {
             .then(res => setHealth(res.data))
             .catch(() => setError("Could not reach the API"));
     }, []);
-
-    // Logout user.
-    function handleLogout() {
-        localStorage.removeItem("token");
-        navigate("/login", { replace: true });
-    }
 
     return (
         <section>
@@ -46,10 +37,7 @@ export function HomePage() {
             >
                 See employees' work schedules
             </Link>
-
-            <button onClick={handleLogout}>
-                Logout
-            </button>
+            
         </section>
     );
 }
