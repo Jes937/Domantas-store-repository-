@@ -7,9 +7,9 @@ namespace Infrastructure;
 public sealed class HolidayRequestDB
 {
     [PrimaryKey] 
-    public string RequestId { get; set; }
+    public string RequestId { get; set; } = null!;
     
-        [Column ("UserId"), NotNull]
+    [Column ("UserId"), NotNull]
     public string UserId { get; set; } = null!;
 
     [Association(ThisKey = nameof(UserId), OtherKey = nameof(UserDB.UserId))]

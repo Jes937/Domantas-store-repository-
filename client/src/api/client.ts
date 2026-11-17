@@ -6,7 +6,7 @@ import { Api } from "./Api";
 // Use the deployed API URL if set, otherwise the local API
 let envUrl: string | undefined;
 try{
-    envUrl = process.env.Bun_PUBLIC_API_URL;
+    envUrl = process.env.BUN_PUBLIC_API_URL;
 } catch {
     envUrl = undefined;
 }

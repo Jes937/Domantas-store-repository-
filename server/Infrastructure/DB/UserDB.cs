@@ -35,8 +35,8 @@ public class UserDB
     [Column ("EmploymentStartDate"), NotNull]
     public DateOnly StartDate { get; set; }
     
-    [Column ("EmplymentEndDate"), Nullable ]
-    public DateOnly EndDate { get; set; }
+    [Column ("EmploymentEndDate"), Nullable ]
+    public DateOnly? EndDate { get; set; }
     
 
     

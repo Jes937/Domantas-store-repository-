@@ -33,6 +33,10 @@ public class Argon2PasswordHasher : IPasswordHasher
     {
         string salt = hashedPassword.Split('.').Last();
         string newHash = HashPassword(password, salt);
-        return string.Equals(newHash, hashedPassword);
+
+        // Compare in constant time, so the time taken doesn't reveal anything
+        return CryptographicOperations.FixedTimeEquals(
+            Encoding.UTF8.GetBytes(newHash),
+            Encoding.UTF8.GetBytes(hashedPassword));
     }
 }
