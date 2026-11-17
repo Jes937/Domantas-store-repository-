@@ -31,6 +31,7 @@ export function Layout() {
                 <nav className="app-nav">
                     <NavLink to="/">Home</NavLink>
                     <NavLink to="/login">Log in</NavLink>
+                    <NavLink to="/employees">Employees</NavLink>
                 </nav>
                 )}
                 

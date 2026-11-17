@@ -11,4 +11,18 @@ try{
     envUrl = undefined;
 }
 
-export const api = new Api({ baseUrl: envUrl || "http://localhost:5221" });
+export const api = new Api({
+    baseUrl: envUrl || "http://localhost:5221",
+    
+    //Runs before every call that needs login
+    securityWorker: () => {
+        //Get the token that the login page saved
+        const token = localStorage.getItem("token");
+    
+        //Not logged in: Send nothing extra
+        if (!token) return {};
+    
+        //Logged in: Send the token in the header
+        return { headers: { Authorization: `Bearer ${token}` } };
+    },
+});
