@@ -1,0 +1,70 @@
+.schedule {
+    --s-primary: #1f5f7f;
+    --s-text: #14202e;
+    --s-muted: #4a5563;
+    --s-border: #d9dee4;
+    --s-danger: #b3261e;
+    max-width: 760px;
+    margin: 40px auto;
+    padding: 0 16px;
+    color: var(--s-text);
+}
+
+.schedule-card {
+    background: #fff;
+    border: 1px solid var(--s-border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+}
+
+.schedule h1, .schedule h2 { margin: 0 0 4px; }
+.schedule-sub { margin: 0 0 24px; color: var(--s-muted); }
+
+.schedule-nav { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.schedule-week { display: flex; flex-direction: column; min-width: 190px; }
+.schedule-week span { color: var(--s-muted); font-size: 0.9rem; }
+.schedule-range { margin: 16px 0 8px; font-weight: 600; }
+.schedule-changes { display: flex; gap: 12px; margin-bottom: 24px; }
+
+.schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 16px;
+}
+.schedule-field { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
+.schedule-input {
+    font: inherit;
+    padding: 12px 14px;
+    border: 1px solid #b9c0c8;
+    border-radius: 10px;
+    background: #fff;
+}
+.schedule-total { margin: 16px 0; color: var(--s-muted); }
+.schedule-error { color: var(--s-danger); margin: 12px 0 0; }
+.schedule-message { color: #1b6e3c; margin: 12px 0 0; }
+.schedule-actions { display: flex; gap: 12px; margin-top: 20px; }
+
+.schedule-btn {
+    font: inherit;
+    font-weight: 600;
+    padding: 12px 20px;
+    border: 1px solid var(--s-primary);
+    border-radius: 10px;
+    background: var(--s-primary);
+    color: #fff;
+    cursor: pointer;
+}
+.schedule-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.schedule-btn--ghost { background: #fff; color: var(--s-primary); }
+.schedule-btn--danger { background: #fff; color: var(--s-danger); border-color: var(--s-danger); }
+
+.schedule-history { list-style: none; margin: 16px 0 0; padding: 0; }
+.schedule-history li {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-top: 1px solid var(--s-border);
+}
+.schedule-history button {
+    font: inherit; background: none; border: 0; padding: 0;
+    color: var(--s-primary); text-decoration: underline; cursor: pointer;
+}
