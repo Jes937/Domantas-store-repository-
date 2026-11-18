@@ -43,7 +43,7 @@ export function EmployeesPage() {
                         <tr key={employee.userId}>
                             <td>{employee.userName}</td>
                             <td>{employee.email}</td>
-                            <td>{Roles[employee.role]}</td>
+                            <td>{employee.role !== undefined ? Roles[employee.role] : "–"}</td>
                             <td>{employee.startDate ?? "–"}</td>
                             <td>{employee.isActive ? "Active" : "Deactivated"}</td>
                             <td>
@@ -56,3 +56,4 @@ export function EmployeesPage() {
             )}
         </section>
     );
+}
