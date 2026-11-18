@@ -22,6 +22,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenServices>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WorkScheduleService>();
+builder.Services.AddScoped<HolidayRequestService>();
 
 // Authentication (JWT)
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(o =>
@@ -88,15 +89,25 @@ using (var scope = app.Services.CreateScope())
 
         foreach (var (name, email, role) in testUsers)
         {
+            var userId = Guid.NewGuid().ToString();
+            var startDate = DateOnly.FromDateTime(DateTime.Today);
+
             db.Insert(new UserDB
             {
-                UserId = Guid.NewGuid().ToString(),
+                UserId = userId,
                 UserName = name,
                 Email = email,
                 Password = hasher.HashAndSaltPassword("Password123"),
                 Role = role,
                 IsActive = true,
-                StartDate = DateOnly.FromDateTime(DateTime.Today)
+                StartDate = startDate
+            });
+            
+            db.Insert(new DatesDB
+            {
+                UserId = userId,
+                EffectiveFrom = startDate,
+                Monday = 7.5m, Tuesday = 7.5m, Wednesday = 7.5m, Thursday = 7.5m, Friday = 7m
             });
         }
     }

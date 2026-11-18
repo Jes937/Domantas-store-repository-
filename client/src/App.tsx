@@ -4,6 +4,7 @@ import { HomePage } from "./pages/HomePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { LoginPage } from "./pages/LoginPage";
 import { EmployeesPage } from "./pages/EmployeesPage";
+import { ApplyPage } from "./pages/ApplyPage";
 
 import SchedulePage from "./pages/SchedulePage";
 import "./index.css";
@@ -20,6 +21,8 @@ const router = createBrowserRouter([
                 element: <RequireLogin />,
                 children: [
                     { index: true, element: <HomePage /> },
+
+                    { path: "apply", element: <ApplyPage /> },
 
                     { path: "users/:userId/schedule", element: <SchedulePage /> },
 

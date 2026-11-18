@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
+import { api } from "../api/client";
 import "./SchedulePage.css";
-
-const API_BASE = "http://localhost:5221";
-const TOKEN_KEY = "token";
 
 const DAYS = [
     "monday", "tuesday", "wednesday", "thursday",
@@ -47,34 +45,14 @@ const emptyForm: Record<Day, string> = {
 };
 
 
-async function request(path: string, method = "GET", body?: object) {
-    const token = localStorage.getItem(TOKEN_KEY);
-
-    const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-    };
-
-    if (token) {
-        headers.Authorization = "Bearer " + token;
-    }
-
-    const res = await fetch(API_BASE + path, {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : undefined,
-    });
-
-    if (res.status === 401) throw new Error("You are not logged in.");
-    if (res.status === 403) throw new Error("You are not allowed to do that.");
-    if (res.status === 404) throw new Error("Not found.");
-    if (!res.ok) throw new Error("Request failed (" + res.status + ")");
-
-    if (res.status === 204) return null;
-
-    return res.json();
-}
-
+// Turns an API error into a readable message
 function errorText(e: unknown) {
+    if (e instanceof Response) {
+        if (e.status === 401) return "You are not logged in.";
+        if (e.status === 403) return "You are not allowed to do that.";
+        if (e.status === 404) return "Not found.";
+        return "Request failed (" + e.status + ")";
+    }
     return e instanceof Error ? e.message : "Something went wrong.";
 }
 
@@ -155,9 +133,9 @@ export default function SchedulePage() {
         setError(null);
 
         try {
-            const v: Version = await request(`/api/users/${userId}/schedule?date=${date}`);
-            const w: Week = await request(`/api/weeks?date=${date}`);
-            const h: Version[] = await request(`/api/users/${userId}/schedule/history`);
+            const v = (await api.schedule.scheduleGet(userId, { date })).data as Version;
+            const w = (await api.week.weekGet({ date })).data as Week;
+            const h = (await api.schedule.scheduleGetHistory(userId)).data as Version[];
 
             setVersion(v);
             setWeek(w);
@@ -240,7 +218,7 @@ export default function SchedulePage() {
         setMessage(null);
 
         try {
-            await request(`/api/users/${userId}/schedule/${validFrom}`, "PUT", hours);
+            await api.schedule.scheduleSave(userId, validFrom, hours);
 
             setMessage("Saved. Applies from " + fmt(validFrom) + ".");
 
@@ -270,7 +248,7 @@ export default function SchedulePage() {
         setError(null);
 
         try {
-            await request(`/api/users/${userId}/schedule/${version.effectiveFrom}`, "DELETE");
+            await api.schedule.scheduleDelete(userId, version.effectiveFrom);
 
             setMessage("Version deleted.");
             await load();
@@ -285,7 +263,7 @@ export default function SchedulePage() {
 
     return (
         <main className="schedule">
-            <Link to="/users">← All employees</Link>
+            <Link to="/employees">← All employees</Link>
 
             <section className="schedule-card">
                 <h1>Work schedule</h1>

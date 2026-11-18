@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Service;
 
 namespace API.Controllers;
@@ -18,10 +19,17 @@ public class ScheduleController : ControllerBase
         _userService = userService;
     }
 
+	private bool CanSee(string userId) =>
+        User.IsInRole("Accountant") || User.IsInRole("SystemOwner")
+        || User.FindFirst(ClaimTypes.NameIdentifier)?.Value == userId;
+
     // Schedule for a given date 
     [HttpGet]
     public async Task<ActionResult<ScheduleVersion>> Get(string userId, DateOnly? date)
     {
+        if (!CanSee(userId))
+            return Forbid();
+
         var user = await _userService.GetUserAsync(userId);
         if (user is null)
             return NotFound();
@@ -36,6 +44,9 @@ public class ScheduleController : ControllerBase
     [HttpGet("history")]
     public async Task<ActionResult<List<ScheduleVersion>>> GetHistory(string userId)
     {
+        if (!CanSee(userId))
+            return Forbid();
+
         var user = await _userService.GetUserAsync(userId);
         if (user is null)
             return NotFound();

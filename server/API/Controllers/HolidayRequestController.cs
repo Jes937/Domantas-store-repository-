@@ -1,0 +1,33 @@
+using System.Security.Claims;
+using Infrastructure;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Service;
+
+namespace API.Controllers;
+
+[ApiController]
+[Route("api/holiday-requests")]
+[Authorize]
+public class HolidayRequestController(HolidayRequestService holidayRequestService) : ControllerBase
+{
+    private string CurrentUserId => User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
+    [HttpPost]
+    public async Task<ActionResult<HolidayRequestSummary>> Create(CreateHolidayRequest request)
+    {
+        try
+        {
+            var created = await holidayRequestService.CreateAsync(CurrentUserId, request);
+            return Ok(created);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+}
