@@ -22,37 +22,46 @@ export function EmployeesPage() {
 
     return (
         <section>
-            <h1>Employees</h1>
+            <div className="page-header">
+                <h1>Employees</h1>
+                <p>Everyone with an account at Business Esbjerg. Open a person to see their work schedule.</p>
+            </div>
 
-            {error && <p role="alert">{error}</p>}
+            {error && <p className="alert" role="alert">{error}</p>}
 
             {!error && (
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Work email</th>
-                        <th>Role</th>
-                        <th>Started</th>
-                        <th>Status</th>
-                        <th>Work schedule</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {employees.map(employee => (
-                        <tr key={employee.userId}>
-                            <td>{employee.userName}</td>
-                            <td>{employee.email}</td>
-                            <td>{employee.role !== undefined ? Roles[employee.role] : "–"}</td>
-                            <td>{employee.startDate ?? "–"}</td>
-                            <td>{employee.isActive ? "Active" : "Deactivated"}</td>
-                            <td>
-                                <Link to={`/users/${employee.userId}/schedule`}>Open</Link>
-                            </td>
+                <div className="card" style={{ padding: 0, overflowX: "auto" }}>
+                    <table className="table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Work email</th>
+                            <th>Role</th>
+                            <th>Started</th>
+                            <th>Status</th>
+                            <th>Work schedule</th>
                         </tr>
-                    ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        {employees.map(employee => (
+                            <tr key={employee.userId}>
+                                <td style={{ fontWeight: 600 }}>{employee.userName}</td>
+                                <td>{employee.email}</td>
+                                <td>{employee.role !== undefined ? Roles[employee.role] : "–"}</td>
+                                <td>{employee.startDate ?? "–"}</td>
+                                <td>
+                                    <span className={employee.isActive ? "badge badge-approved" : "badge badge-neutral"}>
+                                        {employee.isActive ? "Active" : "Deactivated"}
+                                    </span>
+                                </td>
+                                <td>
+                                    <Link to={`/users/${employee.userId}/schedule`}>Open</Link>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </section>
     );
