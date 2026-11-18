@@ -53,6 +53,7 @@ export function Layout() {
                 <nav className="sidebar-nav" aria-label="Main">
                     <span className="sidebar-label">My holiday</span>
                     <NavLink to="/" end className="sidebar-link">Overview</NavLink>
+                    <NavLink to="/apply" className="sidebar-link">Apply for holiday</NavLink>
 
                     {(isAccountant || isSystemOwner) && (
                         <>

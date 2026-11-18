@@ -16,6 +16,18 @@ export enum Roles {
   SystemOwner = 2,
 }
 
+export enum RequestStatus {
+  Pending = 0,
+  Approved = 1,
+  Rejected = 2,
+  Canceled = 3,
+}
+
+export enum HolidayAccount {
+  Week1To5 = 0,
+  Week6 = 1,
+}
+
 export interface LoginResponse {
   token?: string;
 }
@@ -29,6 +41,26 @@ export interface HealthResponse {
   status?: string;
   /** @format date-time */
   serverTime?: string;
+}
+
+export interface HolidayRequestSummary {
+  requestId?: string;
+  /** @format date */
+  startDate?: string;
+  /** @format date */
+  endDate?: string;
+  account?: HolidayAccount;
+  /** @format decimal */
+  hours?: number;
+  status?: RequestStatus;
+}
+
+export interface CreateHolidayRequest {
+  /** @format date */
+  startDate?: string;
+  /** @format date */
+  endDate?: string;
+  account?: HolidayAccount;
 }
 
 export interface ScheduleVersion {
@@ -376,6 +408,29 @@ export class Api<
         path: `/api/Health`,
         method: "GET",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+  };
+  holidayRequest = {
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestCreate
+     * @request POST:/api/holiday-requests
+     * @secure
+     */
+    holidayRequestCreate: (
+      data: CreateHolidayRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<HolidayRequestSummary, any>({
+        path: `/api/holiday-requests`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),

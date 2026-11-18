@@ -66,4 +66,14 @@ public class AuthorizationTests : IClassFixture<ApiFactory>
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
+    
+    [Fact]
+    public async Task GetOtherUsersSchedule_AsEmployee_Returns403()
+    {
+        await LoginAs("employee@businessesbjerg.com");
+
+        var response = await _client.GetAsync($"/api/users/{Guid.NewGuid()}/schedule");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
 }
