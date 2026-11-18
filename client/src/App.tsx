@@ -3,6 +3,7 @@ import { Layout } from "./components/Layout";
 import { HomePage } from "./pages/HomePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { LoginPage } from "./pages/LoginPage";
+import { EmployeesPage } from "./pages/EmployeesPage";
 
 import SchedulePage from "./pages/SchedulePage";
 import "./index.css";
@@ -21,6 +22,8 @@ const router = createBrowserRouter([
                     { index: true, element: <HomePage /> },
 
                     { path: "users/:userId/schedule", element: <SchedulePage /> },
+
+                    { path: "employees", element: <EmployeesPage /> },
                 ],
             },
             { path: "*", element: <NotFoundPage /> },

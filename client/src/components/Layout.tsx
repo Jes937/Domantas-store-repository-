@@ -40,7 +40,7 @@ export function Layout() {
                 {!onLoginPage && (
                     <nav className="app-nav">
                         <NavLink to="/">Home</NavLink>
-
+                        <NavLink to="/employees">Employees</NavLink>
                         <button onClick={handleLogout}>
                             Logout
                         </button>
