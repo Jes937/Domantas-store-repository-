@@ -21,6 +21,7 @@ builder.Services.AddScoped<Argon2PasswordHasher>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenServices>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<WorkScheduleService>();
 
 // Authentication (JWT)
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(o =>
@@ -40,7 +41,7 @@ builder.Services.AddAuthorization();
 // Enable controllers
 builder.Services.AddControllers();
 
-// Swagger documentation (NSwag) with an Authorize button
+// Swagger documentation 
 builder.Services.AddOpenApiDocument(config =>
 {
     config.Title = "Business Esbjerg Holiday API";
