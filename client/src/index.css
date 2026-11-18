@@ -1,9 +1,36 @@
 /* Global styles - follows the Holiday Planner design */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Sidebar (dark navy) */
+  --navy: #0f1f27;
+  --navy-raised: #152a34;
+  --navy-active: #1d3a47;
+  --navy-border: #24414e;
+  --sidebar-text: #c5d3da;
+  --sidebar-muted: #8fa3ad;
+
+  /* Brand colour */
+  --accent: #0b5c7a;
+  --accent-dark: #083f54;
+  --accent-light: #7fd0ec;
+
+  /* Content area */
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --border: #e3e7eb;
+  --text: #0e1a22;
+  --text-muted: #4a5863;
+
+  /* Status colours */
+  --warning: #f2b84b;
+  --danger: #b42318;
+  --success: #15803d;
+
+  --radius: 16px;
+
+  font-family: Geist, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  color: #16202a;
-  background-color: #f4f6f8;
+  color: var(--text);
+  background-color: var(--bg);
 }
 
 body {
@@ -12,11 +39,11 @@ body {
 }
 
 a {
-  color: #0b5c7a;
+  color: var(--accent);
 }
 
 a:hover {
-  color: #083f54;
+  color: var(--accent-dark);
 }
 
 h1 {
@@ -37,8 +64,8 @@ h1 {
   align-items: center;
   gap: 12px;
   padding: 20px 32px;
-  background: #ffffff;
-  border-bottom: 1px solid #dde2e8;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
 
 .app-name {
