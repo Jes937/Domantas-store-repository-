@@ -26,32 +26,33 @@ export function EmployeesPage() {
 
             {error && <p role="alert">{error}</p>}
 
-            <table>
-                <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Work email</th>
-                    <th>Role</th>
-                    <th>Started</th>
-                    <th>Status</th>
-                    <th>Work schedule</th>
-                </tr>
-                </thead>
-                <tbody>
-                {employees.map(employee => (
-                    <tr key={employee.userId}>
-                        <td>{employee.userName}</td>
-                        <td>{employee.email}</td>
-                        <td>{Roles[employee.role]}</td>
-                        <td>{employee.startDate ?? "–"}</td>
-                        <td>{employee.isActive ? "Active" : "Deactivated"}</td>
-                        <td>
-                            <Link to={`/users/${employee.userId}/schedule`}>Open</Link>
-                        </td>
+            {!error && (
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Work email</th>
+                        <th>Role</th>
+                        <th>Started</th>
+                        <th>Status</th>
+                        <th>Work schedule</th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {employees.map(employee => (
+                        <tr key={employee.userId}>
+                            <td>{employee.userName}</td>
+                            <td>{employee.email}</td>
+                            <td>{Roles[employee.role]}</td>
+                            <td>{employee.startDate ?? "–"}</td>
+                            <td>{employee.isActive ? "Active" : "Deactivated"}</td>
+                            <td>
+                                <Link to={`/users/${employee.userId}/schedule`}>Open</Link>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            )}
         </section>
     );
-}
