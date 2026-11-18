@@ -1,9 +1,36 @@
 /* Global styles - follows the Holiday Planner design */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Sidebar (dark navy) */
+  --navy: #0f1f27;
+  --navy-raised: #152a34;
+  --navy-active: #1d3a47;
+  --navy-border: #24414e;
+  --sidebar-text: #c5d3da;
+  --sidebar-muted: #8fa3ad;
+
+  /* Brand colour */
+  --accent: #0b5c7a;
+  --accent-dark: #083f54;
+  --accent-light: #7fd0ec;
+
+  /* Content area */
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --border: #e3e7eb;
+  --text: #0e1a22;
+  --text-muted: #4a5863;
+
+  /* Status colours */
+  --warning: #f2b84b;
+  --danger: #b42318;
+  --success: #15803d;
+
+  --radius: 16px;
+
+  font-family: Geist, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  color: #16202a;
-  background-color: #f4f6f8;
+  color: var(--text);
+  background-color: var(--bg);
 }
 
 body {
@@ -12,11 +39,11 @@ body {
 }
 
 a {
-  color: #0b5c7a;
+  color: var(--accent);
 }
 
 a:hover {
-  color: #083f54;
+  color: var(--accent-dark);
 }
 
 h1 {
@@ -25,38 +52,180 @@ h1 {
   line-height: 1.2;
 }
 
-/* Page frame: header at the top, the page fills the rest */
+/* Page frame: dark sidebar on the left, the page on the right */
 .app {
   min-height: 100vh;
+  display: flex;
+}
+
+.sidebar {
+  width: 260px;
+  flex: none;
+  box-sizing: border-box;
+  background: var(--navy);
+  color: var(--sidebar-text);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 6px;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-text {
   display: flex;
   flex-direction: column;
 }
 
-.app-header {
+.brand-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.brand-sub {
+  font-size: 12px;
+  color: var(--sidebar-muted);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sidebar-muted);
+  padding: 14px 10px 8px;
+}
+
+.sidebar-link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 20px 32px;
-  background: #ffffff;
-  border-bottom: 1px solid #dde2e8;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.app-name {
+.sidebar-link:hover {
+  background: #182f3a;
+  color: #ffffff;
+}
+
+.sidebar-link.active {
+  background: var(--navy-active);
+  color: #ffffff;
   font-weight: 600;
-  font-size: 20px;
 }
 
-.app-nav {
-  margin-left: auto;
+.sidebar-bottom {
+  margin-top: auto;
   display: flex;
-  gap: 20px;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--navy-border);
+  padding-top: 14px;
 }
 
-.app-main {
-  flex: 1;
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #d7eef6;
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.user-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.user-role {
+  font-size: 12px;
+  color: var(--sidebar-muted);
+}
+
+.logout-button {
+  height: 40px;
+  border: 1px solid var(--navy-border);
+  border-radius: 10px;
+  background: var(--navy-raised);
+  color: var(--sidebar-text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background: #1b3440;
+  color: #ffffff;
+}
+
+/* The page area */
+.app-main {
+  flex: 1;
+  min-width: 0;
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+/* Login page: no sidebar, form in the middle */
+.login-frame {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
   text-align: center;
+}
+
+/* Small screens: sidebar on top */
+@media (max-width: 800px) {
+  .app {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+  }
 }

@@ -31,6 +31,31 @@ export interface HealthResponse {
   serverTime?: string;
 }
 
+export interface ScheduleVersion {
+  /** @format date */
+  effectiveFrom?: string | null;
+  /** @format date */
+  validUntil?: string | null;
+  hours?: ScheduleHours;
+}
+
+export interface ScheduleHours {
+  /** @format decimal */
+  monday?: number;
+  /** @format decimal */
+  tuesday?: number;
+  /** @format decimal */
+  wednesday?: number;
+  /** @format decimal */
+  thursday?: number;
+  /** @format decimal */
+  friday?: number;
+  /** @format decimal */
+  saturday?: number;
+  /** @format decimal */
+  sunday?: number;
+}
+
 export interface UserSummary {
   userId?: string;
   userName?: string;
@@ -352,6 +377,92 @@ export class Api<
         method: "GET",
         secure: true,
         format: "json",
+        ...params,
+      }),
+  };
+  schedule = {
+    /**
+     * No description
+     *
+     * @tags Schedule
+     * @name ScheduleGet
+     * @request GET:/api/users/{userId}/schedule
+     * @secure
+     */
+    scheduleGet: (
+      userId: string,
+      query?: {
+        /** @format date */
+        date?: string | null;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<ScheduleVersion, any>({
+        path: `/api/users/${userId}/schedule`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Schedule
+     * @name ScheduleGetHistory
+     * @request GET:/api/users/{userId}/schedule/history
+     * @secure
+     */
+    scheduleGetHistory: (userId: string, params: RequestParams = {}) =>
+      this.request<ScheduleVersion[], any>({
+        path: `/api/users/${userId}/schedule/history`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Schedule
+     * @name ScheduleSave
+     * @request PUT:/api/users/{userId}/schedule/{effectiveFrom}
+     * @secure
+     */
+    scheduleSave: (
+      userId: string,
+      effectiveFrom: string,
+      data: ScheduleHours,
+      params: RequestParams = {},
+    ) =>
+      this.request<Blob, any>({
+        path: `/api/users/${userId}/schedule/${effectiveFrom}`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Schedule
+     * @name ScheduleDelete
+     * @request DELETE:/api/users/{userId}/schedule/{effectiveFrom}
+     * @secure
+     */
+    scheduleDelete: (
+      userId: string,
+      effectiveFrom: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<Blob, any>({
+        path: `/api/users/${userId}/schedule/${effectiveFrom}`,
+        method: "DELETE",
+        secure: true,
         ...params,
       }),
   };
