@@ -51,6 +51,10 @@ cd client
 bun x playwright install chromium   # first time only
 bun run test:e2e
 ```
+## Testing strategy
+
+- **TDD** for business logic: the rules from the case are written as unit tests first (red), then the code is written until they pass (green). Example: `HolidayCalculator` (`server/Tests/Unit/HolidayCalculatorTests.cs`).
+- **Test-last** for controllers and UI: integration tests (authorization) and E2E tests (login) are written after the feature.
 
 ## Authorization
 
