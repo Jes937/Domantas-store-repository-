@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import "./SchedulePage.css";
@@ -37,105 +36,101 @@ const LABELS: Record<Day, string> = {
     sunday: "Sunday",
 };
 
-// Default: Monday–Thursday 7.5 hours, Friday 7 hours
-const DEFAULT_HOURS: Hours = {
-    monday: 7.5,
-    tuesday: 7.5,
-    wednesday: 7.5,
-    thursday: 7.5,
-    friday: 7,
-    saturday: 0,
-    sunday: 0,
+const emptyForm: Record<Day, string> = {
+    monday: "",
+    tuesday: "",
+    wednesday: "",
+    thursday: "",
+    friday: "",
+    saturday: "",
+    sunday: "",
 };
 
-async function request<T>(
-    path: string,
-    init?: RequestInit
-): Promise<T> {
+
+async function request(path: string, method = "GET", body?: object) {
     const token = localStorage.getItem(TOKEN_KEY);
 
-    const res = await fetch(`${API_BASE}${path}`, {
-        ...init,
-        headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            ...init?.headers,
-        },
+    const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+    };
+
+    if (token) {
+        headers.Authorization = "Bearer " + token;
+    }
+
+    const res = await fetch(API_BASE + path, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
     });
 
-    if (res.status === 401) {
-        throw new Error("You are not logged in.");
-    }
+    if (res.status === 401) throw new Error("You are not logged in.");
+    if (res.status === 403) throw new Error("You are not allowed to do that.");
+    if (res.status === 404) throw new Error("Not found.");
+    if (!res.ok) throw new Error("Request failed (" + res.status + ")");
 
-    if (res.status === 403) {
-        throw new Error("You are not allowed to do that.");
-    }
+    if (res.status === 204) return null;
 
-    if (res.status === 404) {
-        throw new Error("User not found.");
-    }
-
-    if (!res.ok) {
-        throw new Error(
-            (await res.text()) || `Request failed (${res.status})`
-        );
-    }
-
-    return res.status === 204
-        ? (undefined as T)
-        : ((await res.json()) as T);
+    return res.json();
 }
 
-// Date helpers
-const pad = (n: number) => String(n).padStart(2, "0");
+function errorText(e: unknown) {
+    return e instanceof Error ? e.message : "Something went wrong.";
+}
 
-const todayIso = () => {
-    const n = new Date();
+// Date
+function todayIso() {
+    return new Date().toLocaleDateString("sv-SE");
+}
 
-    return `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}`;
-};
-
-const addDays = (iso: string, days: number) => {
-    const d = new Date(`${iso}T00:00:00Z`);
+function addDays(iso: string, days: number) {
+    const d = new Date(iso + "T00:00:00Z");
     d.setUTCDate(d.getUTCDate() + days);
 
     return d.toISOString().slice(0, 10);
-};
+}
 
-const fmt = (iso: string) =>
-    new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", {
+function fmt(iso: string) {
+    return new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", {
         day: "numeric",
         month: "short",
         year: "numeric",
         timeZone: "UTC",
     });
+}
 
-const sum = (h: Hours) =>
-    Math.round(
-        DAYS.reduce((s, d) => s + h[d], 0) * 100
-    ) / 100;
+function sumHours(values: number[]) {
+    let total = 0;
 
-const toForm = (h: Hours) =>
-    Object.fromEntries(
-        DAYS.map((d) => [d, String(h[d])])
-    ) as Record<Day, string>;
+    for (const v of values) {
+        total += v;
+    }
 
-const emptyForm = Object.fromEntries(
-    DAYS.map((d) => [d, ""])
-) as Record<Day, string>;
+    return Math.round(total * 100) / 100;
+}
 
-const rangeText = (v: Version) =>
-    v.effectiveFrom
-        ? `From ${fmt(v.effectiveFrom)}${
-            v.validUntil
-                ? ` until ${fmt(v.validUntil)}`
-                : " onwards"
-        }`
-        : `Default week${
-            v.validUntil
-                ? ` until ${fmt(v.validUntil)}`
-                : ""
-        }`;
+function toForm(h: Hours) {
+    const form = {} as Record<Day, string>;
+
+    for (const d of DAYS) {
+        form[d] = String(h[d]);
+    }
+
+    return form;
+}
+
+function rangeText(v: Version) {
+    if (!v.effectiveFrom) {
+        if (v.validUntil) return "No schedule until " + fmt(v.validUntil);
+        return "No schedule";
+    }
+
+    if (v.validUntil) {
+        return "From " + fmt(v.effectiveFrom) + " until " + fmt(v.validUntil);
+    }
+
+    return "From " + fmt(v.effectiveFrom) + " onwards";
+}
 
 export default function SchedulePage() {
     const { userId } = useParams();
@@ -150,7 +145,7 @@ export default function SchedulePage() {
     const [message, setMessage] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
 
-    // Load schedule, week and history
+    // Load the schedule, the week and the history
     const load = useCallback(async () => {
         if (!userId) {
             setError("No user ID was provided in the URL.");
@@ -160,17 +155,9 @@ export default function SchedulePage() {
         setError(null);
 
         try {
-            const [v, w, h] = await Promise.all([
-                request<Version>(
-                    `/api/users/${userId}/schedule?date=${date}`
-                ),
-                request<Week>(
-                    `/api/weeks?date=${date}`
-                ),
-                request<Version[]>(
-                    `/api/users/${userId}/schedule/history`
-                ),
-            ]);
+            const v: Version = await request(`/api/users/${userId}/schedule?date=${date}`);
+            const w: Week = await request(`/api/weeks?date=${date}`);
+            const h: Version[] = await request(`/api/users/${userId}/schedule/history`);
 
             setVersion(v);
             setWeek(w);
@@ -178,11 +165,7 @@ export default function SchedulePage() {
             setForm(toForm(v.hours));
             setValidFrom(v.effectiveFrom ?? date);
         } catch (e) {
-            setError(
-                e instanceof Error
-                    ? e.message
-                    : "Something went wrong."
-            );
+            setError(errorText(e));
         }
     }, [userId, date]);
 
@@ -195,39 +178,38 @@ export default function SchedulePage() {
         setDate(next);
     }
 
-    // Validate hours between 0 and 24
-    function validate(): Hours | string {
-        const out = {} as Hours;
-
-        for (const d of DAYS) {
-            const n = Number(form[d]);
-
-            if (form[d].trim() === "" || Number.isNaN(n)) {
-                return `${LABELS[d]} needs a number.`;
-            }
-
-            if (n < 0 || n > 24) {
-                return `${LABELS[d]} must be between 0 and 24 hours.`;
-            }
-
-            out[d] = n;
-        }
-
-        return out;
+    function goWeek(days: number) {
+        go(addDays(week?.monday ?? date, days));
     }
 
-    const invalid = (d: Day) => {
-        const v = form[d].trim();
+    function goPreviousChange() {
+        if (version?.effectiveFrom) {
+            go(addDays(version.effectiveFrom, -1));
+        }
+    }
 
-        return (
-            v === "" ||
-            Number.isNaN(Number(v)) ||
-            Number(v) < 0 ||
-            Number(v) > 24
-        );
-    };
+    function goNextChange() {
+        if (version?.validUntil) {
+            go(addDays(version.validUntil, 1));
+        }
+    }
 
-    // Save schedule
+    function dayError(d: Day) {
+        const text = form[d].trim();
+        const n = Number(text);
+
+        if (text === "" || Number.isNaN(n)) {
+            return LABELS[d] + " needs a number.";
+        }
+
+        if (n < 0 || n > 24) {
+            return LABELS[d] + " must be between 0 and 24 hours.";
+        }
+
+        return null;
+    }
+
+    // Save
     async function save() {
         if (!userId) {
             setError("No user ID was provided.");
@@ -239,11 +221,18 @@ export default function SchedulePage() {
             return;
         }
 
-        const result = validate();
+        // Check every day
+        const hours = {} as Hours;
 
-        if (typeof result === "string") {
-            setError(result);
-            return;
+        for (const d of DAYS) {
+            const problem = dayError(d);
+
+            if (problem) {
+                setError(problem);
+                return;
+            }
+
+            hours[d] = Number(form[d]);
         }
 
         setBusy(true);
@@ -251,15 +240,9 @@ export default function SchedulePage() {
         setMessage(null);
 
         try {
-            await request<void>(
-                `/api/users/${userId}/schedule/${validFrom}`,
-                {
-                    method: "PUT",
-                    body: JSON.stringify(result),
-                }
-            );
+            await request(`/api/users/${userId}/schedule/${validFrom}`, "PUT", hours);
 
-            setMessage(`Saved. Applies from ${fmt(validFrom)}.`);
+            setMessage("Saved. Applies from " + fmt(validFrom) + ".");
 
             if (validFrom === date) {
                 await load();
@@ -267,27 +250,19 @@ export default function SchedulePage() {
                 setDate(validFrom);
             }
         } catch (e) {
-            setError(
-                e instanceof Error
-                    ? e.message
-                    : "Something went wrong."
-            );
+            setError(errorText(e));
         } finally {
             setBusy(false);
         }
     }
 
-    // Delete schedule version
+    // Delete schedule
     async function removeVersion() {
         if (!userId || !version?.effectiveFrom) {
             return;
         }
 
-        if (
-            !window.confirm(
-                `Delete the schedule that starts ${fmt(version.effectiveFrom)}?`
-            )
-        ) {
+        if (!window.confirm("Delete the schedule that starts " + fmt(version.effectiveFrom) + "?")) {
             return;
         }
 
@@ -295,44 +270,28 @@ export default function SchedulePage() {
         setError(null);
 
         try {
-            await request<void>(
-                `/api/users/${userId}/schedule/${version.effectiveFrom}`,
-                {
-                    method: "DELETE",
-                }
-            );
+            await request(`/api/users/${userId}/schedule/${version.effectiveFrom}`, "DELETE");
 
             setMessage("Version deleted.");
             await load();
         } catch (e) {
-            setError(
-                e instanceof Error
-                    ? e.message
-                    : "Something went wrong."
-            );
+            setError(errorText(e));
         } finally {
             setBusy(false);
         }
     }
 
-    const total = Math.round(
-        DAYS.reduce(
-            (s, d) => s + (Number(form[d]) || 0),
-            0
-        ) * 100
-    ) / 100;
+    const total = sumHours(DAYS.map((d) => Number(form[d]) || 0));
 
     return (
         <main className="schedule">
-            <Link to="/users">
-                ← All employees
-            </Link>
+            <Link to="/users">← All employees</Link>
 
             <section className="schedule-card">
                 <h1>Work schedule</h1>
 
                 <p className="schedule-sub">
-                    Hours per weekday. They turn holiday days into hours.
+                    Hours per week
                 </p>
 
                 <div className="schedule-nav">
@@ -340,24 +299,18 @@ export default function SchedulePage() {
                         type="button"
                         className="schedule-btn schedule-btn--ghost"
                         aria-label="Previous week"
-                        onClick={() =>
-                            go(addDays(week?.monday ?? date, -7))
-                        }
+                        onClick={() => goWeek(-7)}
                     >
                         ←
                     </button>
 
                     <div className="schedule-week">
                         <strong>
-                            {week
-                                ? `Week ${week.week}, ${week.year}`
-                                : "Loading…"}
+                            {week ? `Week ${week.week}, ${week.year}` : "Loading…"}
                         </strong>
 
                         <span>
-                            {week
-                                ? `${fmt(week.monday)} – ${fmt(week.sunday)}`
-                                : ""}
+                            {week ? `${fmt(week.monday)} – ${fmt(week.sunday)}` : ""}
                         </span>
                     </div>
 
@@ -365,9 +318,7 @@ export default function SchedulePage() {
                         type="button"
                         className="schedule-btn schedule-btn--ghost"
                         aria-label="Next week"
-                        onClick={() =>
-                            go(addDays(week?.monday ?? date, 7))
-                        }
+                        onClick={() => goWeek(7)}
                     >
                         →
                     </button>
@@ -376,27 +327,18 @@ export default function SchedulePage() {
                         type="date"
                         className="schedule-input"
                         value={date}
-                        onChange={(e) =>
-                            e.target.value && go(e.target.value)
-                        }
+                        onChange={(e) => e.target.value && go(e.target.value)}
                     />
                 </div>
 
-                {version && (
-                    <p className="schedule-range">
-                        {rangeText(version)}
-                    </p>
-                )}
+                {version && <p className="schedule-range">{rangeText(version)}</p>}
 
                 <div className="schedule-changes">
                     <button
                         type="button"
                         className="schedule-btn schedule-btn--ghost"
                         disabled={!version?.effectiveFrom}
-                        onClick={() =>
-                            version?.effectiveFrom &&
-                            go(addDays(version.effectiveFrom, -1))
-                        }
+                        onClick={goPreviousChange}
                     >
                         ← Previous change
                     </button>
@@ -405,10 +347,7 @@ export default function SchedulePage() {
                         type="button"
                         className="schedule-btn schedule-btn--ghost"
                         disabled={!version?.validUntil}
-                        onClick={() =>
-                            version?.validUntil &&
-                            go(addDays(version.validUntil, 1))
-                        }
+                        onClick={goNextChange}
                     >
                         Next change →
                     </button>
@@ -422,39 +361,30 @@ export default function SchedulePage() {
                         void save();
                     }}
                 >
-                    <p className="schedule-hint">
-                        Hours per day, between 0 and 24.
-                        Default week: Mon–Thu 7.5, Fri 7,
-                        Sat–Sun 0 (37 hours).
-                    </p>
+                    <p className="schedule-hint">Hours per day, between 0 and 24.</p>
 
                     <div className="schedule-grid">
-                        {DAYS.map((d) => (
-                            <label key={d} className="schedule-field">
-                                <span>{LABELS[d]}</span>
+                        {DAYS.map((d) => {
+                            const bad = dayError(d) !== null;
 
-                                <input
-                                    type="number"
-                                    inputMode="decimal"
-                                    min={0}
-                                    max={24}
-                                    step={0.25}
-                                    className={`schedule-input${
-                                        invalid(d)
-                                            ? " schedule-input--invalid"
-                                            : ""
-                                    }`}
-                                    aria-invalid={invalid(d)}
-                                    value={form[d]}
-                                    onChange={(e) =>
-                                        setForm({
-                                            ...form,
-                                            [d]: e.target.value,
-                                        })
-                                    }
-                                />
-                            </label>
-                        ))}
+                            return (
+                                <label key={d} className="schedule-field">
+                                    <span>{LABELS[d]}</span>
+
+                                    <input
+                                        type="number"
+                                        inputMode="decimal"
+                                        min={0}
+                                        max={24}
+                                        step={0.25}
+                                        className={bad ? "schedule-input schedule-input--invalid" : "schedule-input"}
+                                        aria-invalid={bad}
+                                        value={form[d]}
+                                        onChange={(e) => setForm({ ...form, [d]: e.target.value })}
+                                    />
+                                </label>
+                            );
+                        })}
                     </div>
 
                     <p className="schedule-total">
@@ -468,9 +398,7 @@ export default function SchedulePage() {
                             type="date"
                             className="schedule-input"
                             value={validFrom}
-                            onChange={(e) =>
-                                setValidFrom(e.target.value)
-                            }
+                            onChange={(e) => setValidFrom(e.target.value)}
                         />
                     </label>
 
@@ -487,22 +415,8 @@ export default function SchedulePage() {
                     )}
 
                     <div className="schedule-actions">
-                        <button
-                            type="submit"
-                            className="schedule-btn"
-                            disabled={busy}
-                        >
+                        <button type="submit" className="schedule-btn" disabled={busy}>
                             Save schedule
-                        </button>
-
-                        <button
-                            type="button"
-                            className="schedule-btn schedule-btn--ghost"
-                            onClick={() =>
-                                setForm(toForm(DEFAULT_HOURS))
-                            }
-                        >
-                            Use default week
                         </button>
 
                         {version?.effectiveFrom && (
@@ -528,17 +442,12 @@ export default function SchedulePage() {
                             <li key={h.effectiveFrom}>
                                 <button
                                     type="button"
-                                    onClick={() =>
-                                        h.effectiveFrom &&
-                                        go(h.effectiveFrom)
-                                    }
+                                    onClick={() => h.effectiveFrom && go(h.effectiveFrom)}
                                 >
                                     {rangeText(h)}
                                 </button>
 
-                                <span>
-                                    {sum(h.hours)} h / week
-                                </span>
+                                <span>{sumHours(DAYS.map((d) => h.hours[d]))} h / week</span>
                             </li>
                         ))}
                     </ul>

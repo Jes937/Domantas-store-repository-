@@ -13,40 +13,49 @@ public class WorkScheduleService
         _db = db;
     }
 
-    // Get the schedule for the week
     public async Task<ScheduleVersion> GetScheduleAsync(string userId, DateOnly date)
     {
-        var monday = MondayOf(date);
+        var versions = await GetVersionsAsync(userId);
 
-        var row = await _db.GetTable<DatesDB>()
-            .FirstOrDefaultAsync(x => x.UserId == userId && x.EffectiveFrom == monday);
+        DatesDB? current = null;
+        DatesDB? next = null;
 
-        return MakeVersion(row);
+        foreach (var version in versions)
+        {
+            if (version.EffectiveFrom <= date)
+                current = version;
+            else if (next == null)
+                next = version;
+        }
+
+        return MakeVersion(current, next);
     }
 
-    // Get all weeks 
+    // Get all saved periods
     public async Task<List<ScheduleVersion>> GetHistoryAsync(string userId)
     {
-        var rows = await _db.GetTable<DatesDB>()
-            .Where(x => x.UserId == userId)
-            .OrderBy(x => x.EffectiveFrom)
-            .ToListAsync();
-
+        var versions = await GetVersionsAsync(userId);
         var result = new List<ScheduleVersion>();
 
-        foreach (var row in rows)
-            result.Add(MakeVersion(row));
+        for (int i = 0; i < versions.Count; i++)
+        {
+            DatesDB? next = null;
+            if (i + 1 < versions.Count)
+                next = versions[i + 1];
+
+            result.Add(MakeVersion(versions[i], next));
+        }
 
         return result;
     }
 
-    // Save the schedule for the week 
-    public async Task SaveAsync(string userId, DateOnly date, ScheduleHours hours)
+    // Create a new period
+    public async Task SaveAsync(string userId, DateOnly effectiveFrom, ScheduleHours hours)
     {
         var row = new DatesDB
         {
             UserId = userId,
-            EffectiveFrom = MondayOf(date),
+            EffectiveFrom = effectiveFrom,
             Monday = hours.Monday,
             Tuesday = hours.Tuesday,
             Wednesday = hours.Wednesday,
@@ -59,63 +68,47 @@ public class WorkScheduleService
         await _db.InsertOrReplaceAsync(row);
     }
 
-   
-    public async Task<bool> DeleteAsync(string userId, DateOnly date)
+    // Delete one period
+    public async Task<bool> DeleteAsync(string userId, DateOnly effectiveFrom)
     {
-        var monday = MondayOf(date);
-
         var deleted = await _db.GetTable<DatesDB>()
-            .Where(x => x.UserId == userId && x.EffectiveFrom == monday)
+            .Where(x => x.UserId == userId && x.EffectiveFrom == effectiveFrom)
             .DeleteAsync();
 
         return deleted > 0;
     }
 
-    
-    private static DateOnly MondayOf(DateOnly date)
+    private async Task<List<DatesDB>> GetVersionsAsync(string userId)
     {
-        int daysSinceMonday = ((int)date.DayOfWeek + 6) % 7;
-        return date.AddDays(-daysSinceMonday);
+        return await _db.GetTable<DatesDB>()
+            .Where(x => x.UserId == userId)
+            .OrderBy(x => x.EffectiveFrom)
+            .ToListAsync();
     }
 
-    // Default week
-    private static ScheduleHours DefaultHours()
-    {
-        return new ScheduleHours
-        {
-            Monday = 7.5m,
-            Tuesday = 7.5m,
-            Wednesday = 7.5m,
-            Thursday = 7.5m,
-            Friday = 7m,
-            Saturday = 0m,
-            Sunday = 0m
-        };
-    }
-
-    
-    private static ScheduleVersion MakeVersion(DatesDB? row)
+    private static ScheduleVersion MakeVersion(DatesDB? row, DatesDB? next)
     {
         var result = new ScheduleVersion();
 
-        if (row == null)
+
+        if (row != null)
         {
-            result.Hours = DefaultHours();
-            return result;
+            result.EffectiveFrom = row.EffectiveFrom;
+            result.Hours = new ScheduleHours
+            {
+                Monday = row.Monday,
+                Tuesday = row.Tuesday,
+                Wednesday = row.Wednesday,
+                Thursday = row.Thursday,
+                Friday = row.Friday,
+                Saturday = row.Saturday,
+                Sunday = row.Sunday
+            };
         }
 
-        result.EffectiveFrom = row.EffectiveFrom;
-        result.ValidUntil = row.EffectiveFrom.AddDays(6);
-        result.Hours = new ScheduleHours
-        {
-            Monday = row.Monday,
-            Tuesday = row.Tuesday,
-            Wednesday = row.Wednesday,
-            Thursday = row.Thursday,
-            Friday = row.Friday,
-            Saturday = row.Saturday,
-            Sunday = row.Sunday
-        };
+        // Valid until the day before
+        if (next != null)
+            result.ValidUntil = next.EffectiveFrom.AddDays(-1);
 
         return result;
     }
