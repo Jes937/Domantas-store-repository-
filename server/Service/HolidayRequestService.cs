@@ -58,4 +58,61 @@ public class HolidayRequestService(UserDataBase db)
         return new HolidayRequestSummary(
             row.RequestId, row.StartDate, row.EndDate, row.Account, row.Hours, row.Status);
     }
+    
+    public async Task<List<PendingRequest>> GetPendingAsync()
+    {
+        return await (
+                from r in db.GetTable<HolidayRequestDB>()
+                join u in db.GetTable<UserDB>() on r.UserId equals u.UserId
+                where r.Status == RequestStatus.Pending
+                orderby r.StartDate
+                select new PendingRequest(r.RequestId, u.UserName, r.StartDate, r.EndDate, r.Account, r.Hours))
+            .ToListAsync();
+    }
+    
+    public async Task ApproveAsync(string requestId, string accountantId)
+    {
+        var request = await GetPendingRequest(requestId);
+        
+        await using var transaction = await db.BeginTransactionAsync();
+
+        request.Status = RequestStatus.Approved;
+        request.DecidedBy = accountantId;
+        request.Decided = DateTime.UtcNow;
+        await db.UpdateAsync(request);
+
+        await db.InsertAsync(new LedgerEntriesDB
+        {
+            EntryId = Guid.NewGuid().ToString(),
+            UserId = request.UserId,
+            Account = request.Account,
+            EntryType = LedgerEntryType.Taken,
+            Hours = -request.Hours,
+            EntryDate = DateOnly.FromDateTime(DateTime.Today),
+            RequestId = request.RequestId
+        });
+
+        await transaction.CommitAsync();
+    }
+    
+    public async Task RejectAsync(string requestId, string accountantId)
+    {
+        var request = await GetPendingRequest(requestId);
+
+        request.Status = RequestStatus.Rejected;
+        request.DecidedBy = accountantId;
+        request.Decided = DateTime.UtcNow;
+        await db.UpdateAsync(request);
+    }
+    
+    private async Task<HolidayRequestDB> GetPendingRequest(string requestId)
+    {
+        var request = await db.GetTable<HolidayRequestDB>()
+            .FirstOrDefaultAsync(x => x.RequestId == requestId);
+
+        if (request == null || request.Status != RequestStatus.Pending)
+            throw new ArgumentException("Request not found or already decided");
+
+        return request;
+    }
 }

@@ -30,4 +30,41 @@ public class HolidayRequestController(HolidayRequestService holidayRequestServic
             return BadRequest(ex.Message);
         }
     }
+    
+    [HttpGet("pending")]
+    [Authorize(Roles = "Accountant")]
+    public async Task<ActionResult<List<PendingRequest>>> GetPending()
+    {
+        return Ok(await holidayRequestService.GetPendingAsync());
+    }
+
+    [HttpPost("{id}/approve")]
+    [Authorize(Roles = "Accountant")]
+    public async Task<IActionResult> Approve(string id)
+    {
+        try
+        {
+            await holidayRequestService.ApproveAsync(id, CurrentUserId);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("{id}/reject")]
+    [Authorize(Roles = "Accountant")]
+    public async Task<IActionResult> Reject(string id)
+    {
+        try
+        {
+            await holidayRequestService.RejectAsync(id, CurrentUserId);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }
