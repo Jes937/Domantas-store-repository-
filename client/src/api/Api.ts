@@ -63,6 +63,18 @@ export interface CreateHolidayRequest {
   account?: HolidayAccount;
 }
 
+export interface PendingRequest {
+  requestId?: string;
+  userName?: string;
+  /** @format date */
+  startDate?: string;
+  /** @format date */
+  endDate?: string;
+  account?: HolidayAccount;
+  /** @format decimal */
+  hours?: number;
+}
+
 export interface ScheduleVersion {
   /** @format date */
   effectiveFrom?: string | null;
@@ -432,6 +444,55 @@ export class Api<
         secure: true,
         type: ContentType.Json,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestGetPending
+     * @request GET:/api/holiday-requests/pending
+     * @secure
+     */
+    holidayRequestGetPending: (params: RequestParams = {}) =>
+      this.request<PendingRequest[], any>({
+        path: `/api/holiday-requests/pending`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestApprove
+     * @request POST:/api/holiday-requests/{id}/approve
+     * @secure
+     */
+    holidayRequestApprove: (id: string, params: RequestParams = {}) =>
+      this.request<Blob, any>({
+        path: `/api/holiday-requests/${id}/approve`,
+        method: "POST",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestReject
+     * @request POST:/api/holiday-requests/{id}/reject
+     * @secure
+     */
+    holidayRequestReject: (id: string, params: RequestParams = {}) =>
+      this.request<Blob, any>({
+        path: `/api/holiday-requests/${id}/reject`,
+        method: "POST",
+        secure: true,
         ...params,
       }),
   };

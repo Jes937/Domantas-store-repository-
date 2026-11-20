@@ -61,6 +61,7 @@ export function Layout() {
                                 {isSystemOwner ? "System" : "Accounting"}
                             </span>
                             <NavLink to="/employees" className="sidebar-link">Employees</NavLink>
+                            {isAccountant && <NavLink to="/approvals" className="sidebar-link">Approve holiday</NavLink>}
                         </>
                     )}
                 </nav>

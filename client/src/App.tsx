@@ -5,6 +5,7 @@ import { NotFoundPage } from "./pages/NotFoundPage";
 import { LoginPage } from "./pages/LoginPage";
 import { EmployeesPage } from "./pages/EmployeesPage";
 import { ApplyPage } from "./pages/ApplyPage";
+import { ApprovalsPage } from "./pages/ApprovalsPage";
 
 import SchedulePage from "./pages/SchedulePage";
 import "./index.css";
@@ -27,6 +28,8 @@ const router = createBrowserRouter([
                     { path: "users/:userId/schedule", element: <SchedulePage /> },
 
                     { path: "employees", element: <EmployeesPage /> },
+
+                    { path: "approvals", element: <ApprovalsPage /> },
                 ],
             },
             { path: "*", element: <NotFoundPage /> },
