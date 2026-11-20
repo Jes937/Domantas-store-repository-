@@ -4,7 +4,159 @@ import { Roles } from "../api/Api";
 import type { UserSummary } from "../api/Api";
 import { api } from "../api/client";
 
-// Employees page (#9): list of all users, with a link to each person's work schedule
+
+
+type Version = {
+    effectiveFrom: string | null;
+    hours: Record<string, number>;
+};
+
+type SchedulesByUser = Record<string, Version[]>;
+
+
+const WEEKDAY_KEYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+function toIsoDate(date: Date) {
+    return date.toLocaleDateString("sv-SE"); // YYYY-MM-DD
+}
+
+
+function getMonday(date: Date) {
+    const monday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    return monday;
+}
+
+
+function getWeekDays(monday: Date) {
+    return Array.from(
+        { length: 7 },
+        (_, i) => new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i)
+    );
+}
+
+
+function findActiveVersion(versions: Version[], date: Date) {
+    const isoDate = toIsoDate(date);
+    const started = versions.filter(v => v.effectiveFrom && v.effectiveFrom <= isoDate);
+
+    if (started.length === 0) return null;
+
+    return started.reduce((newest, v) => (v.effectiveFrom! > newest.effectiveFrom! ? v : newest));
+}
+
+function getHoursOn(versions: Version[], date: Date) {
+    const version = findActiveVersion(versions, date);
+    const weekday = WEEKDAY_KEYS[date.getDay()];
+
+    if (!version || !weekday) return 0;
+
+    return version.hours[weekday] ?? 0;
+}
+
+
+
+const gridCell = {
+    border: "1px solid #999",
+    padding: "10px 14px",
+    textAlign: "center",
+} as const;
+
+function WeekPicker({ first, last, onMove }: { first: Date; last: Date; onMove: (weeks: number) => void }) {
+    const format = (d: Date) =>
+        d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+
+    return (
+        <div>
+            <button type="button" onClick={() => onMove(-1)}>←</button>
+            <h2>{format(first)} – {format(last)}</h2>
+            <button type="button" onClick={() => onMove(1)}>→</button>
+        </div>
+    );
+}
+
+function HeaderRow({ days }: { days: Date[] }) {
+    return (
+        <tr>
+            <th style={{ ...gridCell, textAlign: "left" }}>Employees</th>
+            {days.map(day => (
+                <th key={toIsoDate(day)} style={gridCell}>
+                    <div>{day.toLocaleDateString("en-GB", { weekday: "short" })}</div>
+                    <div>{day.getDate()}</div>
+                </th>
+            ))}
+        </tr>
+    );
+}
+
+function EmployeeRow({ employee, versions, days }: { employee: UserSummary; versions: Version[]; days: Date[] }) {
+    return (
+        <tr>
+            <td style={{ ...gridCell, textAlign: "left", whiteSpace: "nowrap" }}>{employee.userName}</td>
+            {days.map(day => (
+                <td key={toIsoDate(day)} style={gridCell}>{getHoursOn(versions, day) || ""}</td>
+            ))}
+        </tr>
+    );
+}
+
+function EmployeesCalendar({ employees }: { employees: UserSummary[] }) {
+    const [monday, setMonday] = useState(() => getMonday(new Date()));
+    const [schedules, setSchedules] = useState<SchedulesByUser>({});
+
+    // Load every employees schedule
+    useEffect(() => {
+        async function loadSchedules() {
+            const result: SchedulesByUser = {};
+
+            for (const employee of employees) {
+                try {
+                    const response = await api.schedule.scheduleGetHistory(employee.userId!);
+                    result[employee.userId!] = response.data as Version[];
+                } catch {
+                    result[employee.userId!] = []; // one failure only blanks that person
+                }
+            }
+
+            setSchedules(result);
+        }
+
+        void loadSchedules();
+    }, [employees]);
+
+    function moveWeek(weeks: number) {
+        setMonday(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + weeks * 7));
+    }
+
+    const days = getWeekDays(monday);
+
+    return (
+        <section>
+            <WeekPicker
+                first={monday}
+                last={new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6)}
+                onMove={moveWeek}
+            />
+            <table style={{ borderCollapse: "collapse", width: "100%" }}>
+                <thead>
+                <HeaderRow days={days} />
+                </thead>
+                <tbody>
+                {employees.map(employee => (
+                    <EmployeeRow
+                        key={employee.userId}
+                        employee={employee}
+                        versions={schedules[employee.userId!] ?? []}
+                        days={days}
+                    />
+                ))}
+                </tbody>
+            </table>
+        </section>
+    );
+}
+
+
 export function EmployeesPage() {
     const [employees, setEmployees] = useState<UserSummary[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -63,6 +215,8 @@ export function EmployeesPage() {
                     </table>
                 </div>
             )}
+
+            {!error && <EmployeesCalendar employees={employees} />}
         </section>
     );
 }
