@@ -31,6 +31,16 @@ public class UserService
         ArgumentException.ThrowIfNullOrWhiteSpace(username);
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
         
+        //Everyone has a working email at Business Esbjerg
+        ArgumentException.ThrowIfNullOrEmpty(email);
+        email = email.Trim().ToLowerInvariant();
+        const string domain = "@businessesbjerg.com";
+        if (!email.EndsWith(domain) || email.Length <= domain.Length)
+            throw  new ArgumentException("The email must end with @businessesbjerg.com");
+        
+        if (await _db.GetTable<UserDB>().AnyAsync(x => x.Email == email, ct))
+            throw new InvalidOperationException("A user with this email already exists");
+        
         //Password length can be made longer if necesarry
         if (password.Length < 8)
             throw new ArgumentException("Password must be at least 8 characters long");

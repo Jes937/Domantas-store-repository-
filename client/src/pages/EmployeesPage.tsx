@@ -3,8 +3,8 @@ import { Link } from "react-router";
 import { Roles } from "../api/Api";
 import type { UserSummary } from "../api/Api";
 import { api } from "../api/client";
-
-
+import { getCurrentUser } from "../auth";
+import { AddEmployeePanel } from "../components/AddEmployeePanel";
 
 type Version = {
     effectiveFrom: string | null;
@@ -13,13 +13,11 @@ type Version = {
 
 type SchedulesByUser = Record<string, Version[]>;
 
-
 const WEEKDAY_KEYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 function toIsoDate(date: Date) {
     return date.toLocaleDateString("sv-SE"); // YYYY-MM-DD
 }
-
 
 function getMonday(date: Date) {
     const monday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -27,14 +25,12 @@ function getMonday(date: Date) {
     return monday;
 }
 
-
 function getWeekDays(monday: Date) {
     return Array.from(
         { length: 7 },
         (_, i) => new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i)
     );
 }
-
 
 function findActiveVersion(versions: Version[], date: Date) {
     const isoDate = toIsoDate(date);
@@ -53,8 +49,6 @@ function getHoursOn(versions: Version[], date: Date) {
 
     return version.hours[weekday] ?? 0;
 }
-
-
 
 const gridCell = {
     border: "1px solid #999",
@@ -156,10 +150,12 @@ function EmployeesCalendar({ employees }: { employees: UserSummary[] }) {
     );
 }
 
-
 export function EmployeesPage() {
     const [employees, setEmployees] = useState<UserSummary[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [panelOpen, setPanelOpen] = useState(false);
+    const [notice, setNotice] = useState<string | null>(null);
+    const isSystemOwner = getCurrentUser()?.role === "SystemOwner";
 
     useEffect(() => {
         api.user.userGetAll()
@@ -172,12 +168,34 @@ export function EmployeesPage() {
             });
     }, []);
 
+    // Called by the panel when the API has created the employee
+    function handleCreated(user: UserSummary) {
+        setPanelOpen(false);
+        setNotice(`${user.userName} is created and can log in as ${user.email}.`);
+        // Add the new person to the list, so we don't have to reload the page
+        setEmployees(previous => [...previous, user]);
+    }
+
     return (
         <section>
-            <div className="page-header">
-                <h1>Employees</h1>
-                <p>Everyone with an account at Business Esbjerg. Open a person to see their work schedule.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 16 }}>
+                <div className="page-header">
+                    <h1>Employees</h1>
+                    <p>Everyone with an account at Business Esbjerg. Open a person to see their work schedule.</p>
+                </div>
+                {isSystemOwner && (
+                    <button className="btn btn-primary" style={{ marginBottom: 24 }} onClick={() => setPanelOpen(true)}>
+                        + Add employee
+                    </button>
+                )}
             </div>
+
+            {notice && (
+                <p className="badge badge-approved" role="status"
+                   style={{ display: "block", padding: "10px 12px", borderRadius: 10, fontSize: 14, marginBottom: 16 }}>
+                    {notice}
+                </p>
+            )}
 
             {error && <p className="alert" role="alert">{error}</p>}
 
@@ -217,6 +235,10 @@ export function EmployeesPage() {
             )}
 
             {!error && <EmployeesCalendar employees={employees} />}
+
+            {panelOpen && (
+                <AddEmployeePanel onClose={() => setPanelOpen(false)} onCreated={handleCreated} />
+            )}
         </section>
     );
 }

@@ -26,23 +26,19 @@ public class UserController(UserService userService) : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "SystemOwner")]
-    public async Task<ActionResult<UserSummary>> Create(
-        string userName,
-        string password,
-        string email,
-        Roles role)
+    public async Task<ActionResult<UserSummary>> Create([FromBody] CreateUserRequest request)
     {
-        if (!CanManage(role))
+        if (!CanManage(request.Role))
             return Forbid();
 
         try
         {
             var user = await userService.CreateuserAsync(
-                userName,
-                password,
-                email,
-                role);
-
+                request.UserName,
+                request.Password,
+                request.Email,
+                request.Role);
+            
             return Ok(user);
         }
         catch (ArgumentException ex)
@@ -52,7 +48,7 @@ public class UserController(UserService userService) : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            //e.g. there is already an accountant
+            //e.g. there is already an accountant, or email in use
             return Conflict(ex.Message);
         }
     }
