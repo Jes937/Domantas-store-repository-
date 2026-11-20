@@ -109,6 +109,18 @@ using (var scope = app.Services.CreateScope())
                 EffectiveFrom = startDate,
                 Monday = 7.5m, Tuesday = 7.5m, Wednesday = 7.5m, Thursday = 7.5m, Friday = 7m
             });
+
+            // Holiday to start with: 5 weeks (185 hours) and the 6th week (37 hours)
+            db.Insert(new LedgerEntriesDB
+            {
+                EntryId = Guid.NewGuid().ToString(), UserId = userId, Account = HolidayAccount.Week1To5,
+                EntryType = LedgerEntryType.Accrual, Hours = 185, EntryDate = startDate
+            });
+            db.Insert(new LedgerEntriesDB
+            {
+                EntryId = Guid.NewGuid().ToString(), UserId = userId, Account = HolidayAccount.Week6,
+                EntryType = LedgerEntryType.Accrual, Hours = 37, EntryDate = startDate
+            });
         }
     }
 }
