@@ -26,6 +26,20 @@ public class HolidayRequestService(UserDataBase db)
 
         if (hours == 0)
             throw new ArgumentException("The chosen days are not working days");
+        
+        // Can't apply for more than you have
+        var entries = await db.GetTable<LedgerEntriesDB>()
+            .Where(x => x.UserId == userId)
+            .ToListAsync();
+
+        var requests = await db.GetTable<HolidayRequestDB>()
+            .Where(x => x.UserId == userId)
+            .ToListAsync();
+
+        var available = HolidayBalance.Available(request.Account, entries, requests);
+
+        if (hours > available)
+            throw new ArgumentException($"Not enough holiday on this account. You have {available:0.##} hours, this costs {hours:0.##}.");
 
         var row = new HolidayRequestDB
         {
