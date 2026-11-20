@@ -15,3 +15,11 @@ public record HolidayRequestSummary(
     HolidayAccount Account,
     decimal Hours,
     RequestStatus Status);
+
+public record PendingRequest(
+    string RequestId,
+    string UserName,
+    DateOnly StartDate,
+    DateOnly EndDate,
+    HolidayAccount Account,
+    decimal Hours);    
