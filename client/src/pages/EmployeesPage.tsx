@@ -3,11 +3,16 @@ import { Link } from "react-router";
 import { Roles } from "../api/Api";
 import type { UserSummary } from "../api/Api";
 import { api } from "../api/client";
+import { getCurrentUser } from "../auth";
+import { AddEmployeePanel } from "../components/AddEmployeePanel";
 
-// Employees page (#9): list of all users, with a link to each person's work schedule
+// Employees page: list of all users, with a link to each person's work schedule
 export function EmployeesPage() {
     const [employees, setEmployees] = useState<UserSummary[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [panelOpen, setPanelOpen] = useState(false);
+    const [notice, setNotice] = useState<string | null>(null);
+    const isSystemOwner = getCurrentUser()?.role === "SystemOwner";
 
     useEffect(() => {
         api.user.userGetAll()
@@ -20,12 +25,33 @@ export function EmployeesPage() {
             });
     }, []);
 
+    // Called by the panel when the API has created the employee
+    function handleCreated(user: UserSummary) {
+        setPanelOpen(false);
+        setNotice(`${user.userName} is created and can log in as ${user.email}.`);
+        // TODO (Jes, #60): show the new employee in the list without reloading
+    }
+
     return (
         <section>
-            <div className="page-header">
-                <h1>Employees</h1>
-                <p>Everyone with an account at Business Esbjerg. Open a person to see their work schedule.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 16 }}>
+                <div className="page-header">
+                    <h1>Employees</h1>
+                    <p>Everyone with an account at Business Esbjerg. Open a person to see their work schedule.</p>
+                </div>
+                {isSystemOwner && (
+                    <button className="btn btn-primary" style={{ marginBottom: 24 }} onClick={() => setPanelOpen(true)}>
+                        + Add employee
+                    </button>
+                )}
             </div>
+
+            {notice && (
+                <p className="badge badge-approved" role="status"
+                   style={{ display: "block", padding: "10px 12px", borderRadius: 10, fontSize: 14, marginBottom: 16 }}>
+                    {notice}
+                </p>
+            )}
 
             {error && <p className="alert" role="alert">{error}</p>}
 
@@ -62,6 +88,10 @@ export function EmployeesPage() {
                         </tbody>
                     </table>
                 </div>
+            )}
+
+            {panelOpen && (
+                <AddEmployeePanel onClose={() => setPanelOpen(false)} onCreated={handleCreated} />
             )}
         </section>
     );
