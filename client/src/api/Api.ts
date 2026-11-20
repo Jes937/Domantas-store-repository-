@@ -112,6 +112,13 @@ export interface UserSummary {
   endDate?: string | null;
 }
 
+export interface CreateUserRequest {
+  userName?: string;
+  password?: string;
+  email?: string;
+  role?: Roles;
+}
+
 export interface WeekDto {
   /** @format int32 */
   week?: number;
@@ -591,20 +598,13 @@ export class Api<
      * @request POST:/api/users
      * @secure
      */
-    userCreate: (
-      query?: {
-        userName?: string;
-        password?: string;
-        email?: string;
-        role?: Roles;
-      },
-      params: RequestParams = {},
-    ) =>
+    userCreate: (data: CreateUserRequest, params: RequestParams = {}) =>
       this.request<UserSummary, any>({
         path: `/api/users`,
         method: "POST",
-        query: query,
+        body: data,
         secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),

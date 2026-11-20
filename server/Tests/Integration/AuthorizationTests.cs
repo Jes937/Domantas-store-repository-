@@ -1,3 +1,5 @@
+using Infrastructure;
+using Infrastructure.Enums;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -60,9 +62,8 @@ public class AuthorizationTests : IClassFixture<ApiFactory>
         // There is already a test accountant, so a second one is not allowed
         await LoginAs("owner@businessesbjerg.com");
 
-        var response = await _client.PostAsync(
-            "/api/users?userName=Second&password=Password123&email=second@businessesbjerg.com&role=Accountant",
-            null);
+        var response = await _client.PostAsJsonAsync("/api/users",
+            new CreateUserRequest("Second", "Password123", "second@businessesbjerg.com", Roles.Accountant));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
