@@ -60,4 +60,16 @@ public class HolidayRequestTests : IClassFixture<ApiFactory>
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
+    
+    [Fact]
+    public async Task Apply_MoreThanBalance_Returns400()
+    {
+        await LoginAsEmployee();
+
+        // Two weeks (74 hours) on Week 6, but there are only 37 hours
+        var response = await _client.PostAsJsonAsync("/api/holiday-requests",
+            new CreateHolidayRequest(Monday, Monday.AddDays(11), HolidayAccount.Week6));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

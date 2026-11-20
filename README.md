@@ -84,7 +84,7 @@ The rules are tested in `server/Tests/Integration/AuthorizationTests.cs`.
 ### Test users (development only)
 Created when the API runs in Development with an empty database. Password for all: `Password123`
 
-Each test user also gets a full time work schedule (Mon-Thu 7.5, Fri 7 = 37 hours) starting today.
+Each test user also gets a full time work schedule (Mon-Thu 7.5, Fri 7 = 37 hours) starting today, and 185 hours on Weeks 1-5 and 37 hours on Week 6.
 
 | Email | Role |
 |---|---|
