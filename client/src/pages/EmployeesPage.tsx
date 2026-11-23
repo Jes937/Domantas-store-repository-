@@ -159,7 +159,6 @@ export function EmployeesPage() {
     const currentRole = getCurrentUser()?.role;
 
     const isSystemOwner = currentRole === "SystemOwner";
-    const isEmployee = currentRole === "Employee";
 
     useEffect(() => {
         api.user.userGetAll()
@@ -191,7 +190,6 @@ export function EmployeesPage() {
                     gap: 16
                 }}
             >
-                {isSystemOwner && (
                     <div className="page-header">
                         <h1>Employees</h1>
                         <p>
@@ -199,7 +197,6 @@ export function EmployeesPage() {
                             Open a person to see their work schedule.
                         </p>
                     </div>
-                )}
 
                 {isSystemOwner && (
                     <button
@@ -220,7 +217,7 @@ export function EmployeesPage() {
 
             {error && <p className="alert" role="alert">{error}</p>}
 
-            {!error && isSystemOwner && (
+            {!error && (
                 <div className="card" style={{ padding: 0, overflowX: "auto" }}>
                     <table className="table">
                         <thead>
