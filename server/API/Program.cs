@@ -5,12 +5,13 @@ using LinqToDB.Data;
 using Security.Services.Security;
 using Service;
 using LoginApi.Services;
+using API.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Database
 var dbOptions = new DataOptions().UseSQLite(
-    Environment.GetEnvironmentVariable("DB") ?? "Data Source=holiday.db");
+    builder.Configuration["DB"] ?? "Data Source=holiday.db");
 
 builder.Services.AddSingleton(new DataOptions<UserDataBase>(dbOptions));
 builder.Services.AddScoped<UserDataBase>();
@@ -23,6 +24,8 @@ builder.Services.AddScoped<TokenServices>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WorkScheduleService>();
 builder.Services.AddScoped<HolidayRequestService>();
+builder.Services.AddScoped<AccrualService>();
+builder.Services.AddHostedService<AccrualJob>();
 
 // Authentication (JWT)
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(o =>
