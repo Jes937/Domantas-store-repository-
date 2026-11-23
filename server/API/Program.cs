@@ -5,6 +5,7 @@ using LinqToDB.Data;
 using Security.Services.Security;
 using Service;
 using LoginApi.Services;
+using API.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,8 @@ builder.Services.AddScoped<TokenServices>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WorkScheduleService>();
 builder.Services.AddScoped<HolidayRequestService>();
+builder.Services.AddScoped<AccrualService>();
+builder.Services.AddHostedService<AccrualJob>();
 
 // Authentication (JWT)
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(o =>
