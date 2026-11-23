@@ -114,7 +114,7 @@ function rangeText(v: Version) {
 export default function SchedulePage() {
     const { userId } = useParams();
     const currentUser = getCurrentUser();
-    const canEdit = currentUser?.role === "SystemOwner";
+    const canEdit = currentUser?.role === "Accountant" || currentUser?.role === "SystemOwner";
 
     const [date, setDate] = useState(todayIso());
     const [version, setVersion] = useState<Version | null>(null);
