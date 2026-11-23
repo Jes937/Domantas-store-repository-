@@ -20,10 +20,8 @@ public class ScheduleController : ControllerBase
     }
 
     private bool CanSee(string userId) =>
-    User.IsInRole("Employee") ||
-    User.IsInRole("Accountant") ||
-    User.IsInRole("SystemOwner") ||
-    User.FindFirst(ClaimTypes.NameIdentifier)?.Value == userId;
+        User.IsInRole("Accountant") || User.IsInRole("SystemOwner")
+        || User.FindFirst(ClaimTypes.NameIdentifier)?.Value == userId;
 
     // Schedule for a given date 
     [HttpGet]
