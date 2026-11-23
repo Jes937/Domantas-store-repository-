@@ -102,7 +102,7 @@ public class UserController(UserService userService) : ControllerBase
     
     // READ all
     [HttpGet]
-    [Authorize(Roles = "Employee,Accountant,SystemOwner")]
+    [Authorize(Roles = "Accountant,SystemOwner")]
     public async Task<ActionResult<List<UserSummary>>> GetAll()
     {
         var users = await userService.GetAllUsersAsync();
