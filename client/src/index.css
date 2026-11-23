@@ -641,3 +641,73 @@ h1 {
   font-size: 12px;
   color: var(--text-muted);
 }
+
+/* ---------- Week grid (Employees page) ---------- */
+.week-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #eef1f4;
+}
+
+.week-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.week-picker .btn {
+  width: 44px;
+  padding: 0;
+}
+
+.week-picker-label {
+  min-width: 200px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.week-cell {
+  text-align: center !important;
+}
+
+.week-cell.weekend {
+  background: #f7f8fa;
+}
+
+.week-day {
+  display: block;
+  font-size: 12px;
+}
+
+.week-date {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.week-hours {
+  display: inline-block;
+  min-width: 36px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: #e3f1f6;
+  color: #0b4a63;
+  font-family: "Geist Mono", monospace;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.week-empty {
+  color: #c3ccd3;
+}
+
+.week-total {
+  font-family: "Geist Mono", monospace;
+  font-weight: 600;
+}
