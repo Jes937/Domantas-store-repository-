@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { getCurrentUser } from "../auth";
 import { Link, useParams } from "react-router";
 import { api } from "../api/client";
 import "./SchedulePage.css";
@@ -112,6 +113,8 @@ function rangeText(v: Version) {
 
 export default function SchedulePage() {
     const { userId } = useParams();
+    const currentUser = getCurrentUser();
+    const canEdit = currentUser?.role === "Accountant" || currentUser?.role === "SystemOwner";
 
     const [date, setDate] = useState(todayIso());
     const [version, setVersion] = useState<Version | null>(null);
@@ -194,12 +197,16 @@ export default function SchedulePage() {
             return;
         }
 
+        if (!canEdit) {
+            setError("You are not allowed to edit schedules.");
+            return;
+        }
+
         if (!validFrom) {
             setError("Please select a valid start date.");
             return;
         }
 
-        // Check every day
         const hours = {} as Hours;
 
         for (const d of DAYS) {
@@ -236,6 +243,11 @@ export default function SchedulePage() {
 
     // Delete schedule
     async function removeVersion() {
+        if (!canEdit) {
+            setError("You are not allowed to delete schedules.");
+            return;
+        }
+
         if (!userId || !version?.effectiveFrom) {
             return;
         }
@@ -355,6 +367,7 @@ export default function SchedulePage() {
                                         min={0}
                                         max={24}
                                         step={0.25}
+                                        disabled={!canEdit}
                                         className={bad ? "schedule-input schedule-input--invalid" : "schedule-input"}
                                         aria-invalid={bad}
                                         value={form[d]}
@@ -376,6 +389,7 @@ export default function SchedulePage() {
                             type="date"
                             className="schedule-input"
                             value={validFrom}
+                            disabled={!canEdit}
                             onChange={(e) => setValidFrom(e.target.value)}
                         />
                     </label>
@@ -393,11 +407,13 @@ export default function SchedulePage() {
                     )}
 
                     <div className="schedule-actions">
-                        <button type="submit" className="schedule-btn" disabled={busy}>
-                            Save schedule
-                        </button>
+                        {canEdit && (
+                            <button type="submit" className="schedule-btn" disabled={busy}>
+                                Save schedule
+                            </button>
+                        )}
 
-                        {version?.effectiveFrom && (
+                        {canEdit && version?.effectiveFrom && (
                             <button
                                 type="button"
                                 className="schedule-btn schedule-btn--danger"

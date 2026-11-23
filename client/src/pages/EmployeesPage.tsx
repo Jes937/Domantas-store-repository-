@@ -155,7 +155,10 @@ export function EmployeesPage() {
     const [error, setError] = useState<string | null>(null);
     const [panelOpen, setPanelOpen] = useState(false);
     const [notice, setNotice] = useState<string | null>(null);
-    const isSystemOwner = getCurrentUser()?.role === "SystemOwner";
+
+    const currentRole = getCurrentUser()?.role;
+
+    const isSystemOwner = currentRole === "SystemOwner";
 
     useEffect(() => {
         api.user.userGetAll()
@@ -168,28 +171,43 @@ export function EmployeesPage() {
             });
     }, []);
 
-    // Called by the panel when the API has created the employee
+    // Called by the panel when the API
     function handleCreated(user: UserSummary) {
         setPanelOpen(false);
         setNotice(`${user.userName} is created and can log in as ${user.email}.`);
-        // Add the new person to the list, so we don't have to reload the page
+        // Add the new person to the list
         setEmployees(previous => [...previous, user]);
     }
 
     return (
         <section>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 16 }}>
-                <div className="page-header">
-                    <h1>Employees</h1>
-                    <p>Everyone with an account at Business Esbjerg. Open a person to see their work schedule.</p>
-                </div>
+            <div
+                style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "flex-end",
+                    justifyContent: "space-between",
+                    gap: 16
+                }}
+            >
+                    <div className="page-header">
+                        <h1>Employees</h1>
+                        <p>
+                            Everyone with an account at Business Esbjerg.
+                            Open a person to see their work schedule.
+                        </p>
+                    </div>
+
                 {isSystemOwner && (
-                    <button className="btn btn-primary" style={{ marginBottom: 24 }} onClick={() => setPanelOpen(true)}>
+                    <button
+                        className="btn btn-primary"
+                        style={{ marginBottom: 24 }}
+                        onClick={() => setPanelOpen(true)}
+                    >
                         + Add employee
                     </button>
                 )}
             </div>
-
             {notice && (
                 <p className="badge badge-approved" role="status"
                    style={{ display: "block", padding: "10px 12px", borderRadius: 10, fontSize: 14, marginBottom: 16 }}>

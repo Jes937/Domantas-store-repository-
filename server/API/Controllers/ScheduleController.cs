@@ -19,7 +19,7 @@ public class ScheduleController : ControllerBase
         _userService = userService;
     }
 
-	private bool CanSee(string userId) =>
+    private bool CanSee(string userId) =>
         User.IsInRole("Accountant") || User.IsInRole("SystemOwner")
         || User.FindFirst(ClaimTypes.NameIdentifier)?.Value == userId;
 
