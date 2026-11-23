@@ -70,6 +70,7 @@ export function Layout() {
                 </nav>
 
                 <div className="sidebar-bottom">
+                    <NavLink to="/policy" className="sidebar-link">Holiday policy</NavLink>
                     <div className="sidebar-user">
                         <span className="avatar">{initials}</span>
                         <span className="user-text">
