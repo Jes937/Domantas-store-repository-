@@ -220,7 +220,7 @@ export function EmployeesPage() {
 
             {error && <p className="alert" role="alert">{error}</p>}
 
-            {!error && isSystemOwner && (
+            {!error && !isEmployee && (
                 <div className="card" style={{ padding: 0, overflowX: "auto" }}>
                     <table className="table">
                         <thead>
