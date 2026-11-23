@@ -10,7 +10,7 @@ export function HomePage() {
     const [health, setHealth] = useState<HealthResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
     const user = getCurrentUser();
-    const canManage = user?.role === "Accountant" || user?.role === "SystemOwner";
+    const canManage = user?.role === "Accountant" || user?.role === "SystemOwner" || user?.role === "Employee";
 
     // Check that the API is running
     useEffect(() => {
