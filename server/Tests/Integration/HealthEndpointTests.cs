@@ -1,17 +1,15 @@
-using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
 using API.Controllers;
-using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Tests.Integration;
 
 //Intergration test: starts the whole API in memory and calls a real endpoint
-public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+public class HealthEndpointTests : IClassFixture<ApiFactory>
 {
     private readonly HttpClient _client;
 
-    public HealthEndpointTests(WebApplicationFactory<Program> factory)
+    public HealthEndpointTests(ApiFactory factory)
     {
         _client = factory.CreateClient();
     }

@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Database
 var dbOptions = new DataOptions().UseSQLite(
-    Environment.GetEnvironmentVariable("DB") ?? "Data Source=holiday.db");
+    builder.Configuration["DB"] ?? "Data Source=holiday.db");
 
 builder.Services.AddSingleton(new DataOptions<UserDataBase>(dbOptions));
 builder.Services.AddScoped<UserDataBase>();
