@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
 import { api } from "../api/client";
-import type { HealthResponse } from "../api/Api";
+import { HolidayAccount, type AccountBalance, type HealthResponse } from "../api/Api";
 import { getCurrentUser } from "../auth";
 
 // Overview page - the first page after login
 export function HomePage() {
     const [health, setHealth] = useState<HealthResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [balance, setBalance] = useState<AccountBalance[]>([]);
     const user = getCurrentUser();
     const canManage = user?.role === "Accountant" || user?.role === "SystemOwner";
 
@@ -18,6 +19,8 @@ export function HomePage() {
             .healthGet()
             .then(res => setHealth(res.data))
             .catch(() => setError("Could not reach the API"));
+        
+        api.balance.balanceGet().then(res => setBalance(res.data));
     }, []);
 
     return (
@@ -39,10 +42,14 @@ export function HomePage() {
                 )}
 
                 <div className="card">
-                    <h2>Holiday balance <span className="badge badge-neutral">Coming soon</span></h2>
-                    <p style={{ color: "var(--text-muted)" }}>
-                        Your free hours in Weeks 1–5 and the 6th week.
-                    </p>
+                    <h2>Holiday balance</h2>
+                    {balance.map(b => (
+                        <p key={b.account}>
+                            <strong>{b.account === HolidayAccount.Week6 ? "Week 6" : "Weeks 1-5"}:</strong>{" "}
+                            {b.hours?.toFixed(2)} hours
+                            {b.expiresOn && <span style={{ color: "var(--text-muted)" }}> · expires {b.expiresOn}</span>}
+                        </p>
+                    ))}
                 </div>
 
                 <div className="card">
