@@ -46,10 +46,15 @@ export function HomePage() {
                 </div>
 
                 <div className="card">
-                    <h2>My requests <span className="badge badge-neutral">Coming soon</span></h2>
+                    <h2>My requests</h2>
+
                     <p style={{ color: "var(--text-muted)" }}>
                         Apply for holiday and follow your requests.
                     </p>
+
+                    <Link to="/my-requests">
+                        View my requests
+                    </Link>
                 </div>
             </div>
 
