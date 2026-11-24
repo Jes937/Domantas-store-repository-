@@ -59,12 +59,18 @@ public class HolidayRequestController(HolidayRequestService holidayRequestServic
     {
         try
         {
-            await holidayRequestService.RejectAsync(id, CurrentUserId);
+            await holidayRequestService.RejectAsync(id, CurrentUserId, "");
             return NoContent();
         }
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
         }
+    }
+
+    [HttpGet("mine")]
+    public async Task<ActionResult<List<HolidayRequestSummary>>> GetMine()
+    {
+        return Ok(await holidayRequestService.GetOwnAsync(CurrentUserId));
     }
 }
