@@ -44,6 +44,7 @@ public class AccrualService(UserDataBase db)
             Account = account,
             EntryType = LedgerEntryType.Accrual,
             Hours = HolidayAccrual.MonthlyHours(schedule, account),
-            EntryDate = lastDay
+            EntryDate = lastDay,
+            ExpiresOn = HolidayExpiry.ExpiresOn(account, lastDay)
         });
 }

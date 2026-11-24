@@ -37,6 +37,14 @@ export interface LoginRequest {
   password?: string;
 }
 
+export interface AccountBalance {
+  account?: HolidayAccount;
+  /** @format decimal */
+  hours?: number;
+  /** @format date */
+  expiresOn?: string | null;
+}
+
 export interface HealthResponse {
   status?: string;
   /** @format date-time */
@@ -418,6 +426,24 @@ export class Api<
         ...params,
       }),
   };
+  balance = {
+    /**
+     * No description
+     *
+     * @tags Balance
+     * @name BalanceGet
+     * @request GET:/api/balance
+     * @secure
+     */
+    balanceGet: (params: RequestParams = {}) =>
+      this.request<AccountBalance[], any>({
+        path: `/api/balance`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+  };
   health = {
     /**
      * No description
@@ -511,6 +537,23 @@ export class Api<
         body: data,
         secure: true,
         type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestGetMine
+     * @request GET:/api/holiday-requests/mine
+     * @secure
+     */
+    holidayRequestGetMine: (params: RequestParams = {}) =>
+      this.request<HolidayRequestSummary[], any>({
+        path: `/api/holiday-requests/mine`,
+        method: "GET",
+        secure: true,
+        format: "json",
         ...params,
       }),
 
