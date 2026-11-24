@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { getCurrentUser } from "../auth";
+import { HolidayYearCard}  from "./HolidayYearCard";
 
 // Shared layout: dark sidebar on the left, the current page on the right
 export function Layout() {
@@ -70,6 +71,7 @@ export function Layout() {
                 </nav>
 
                 <div className="sidebar-bottom">
+                    <HolidayYearCard />
                     <NavLink to="/policy" className="sidebar-link">Holiday policy</NavLink>
                     <div className="sidebar-user">
                         <span className="avatar">{initials}</span>
