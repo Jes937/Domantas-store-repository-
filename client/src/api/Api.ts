@@ -53,6 +53,7 @@ export interface HolidayRequestSummary {
   /** @format decimal */
   hours?: number;
   status?: RequestStatus;
+  reason?: string | null;
 }
 
 export interface CreateHolidayRequest {
@@ -73,6 +74,10 @@ export interface PendingRequest {
   account?: HolidayAccount;
   /** @format decimal */
   hours?: number;
+}
+
+export interface RejectHolidayRequest {
+  reason?: string;
 }
 
 export interface ScheduleVersion {
@@ -495,11 +500,34 @@ export class Api<
      * @request POST:/api/holiday-requests/{id}/reject
      * @secure
      */
-    holidayRequestReject: (id: string, params: RequestParams = {}) =>
+    holidayRequestReject: (
+      id: string,
+      data: RejectHolidayRequest,
+      params: RequestParams = {},
+    ) =>
       this.request<Blob, any>({
         path: `/api/holiday-requests/${id}/reject`,
         method: "POST",
+        body: data,
         secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestGetMine
+     * @request GET:/api/holiday-requests/mine
+     * @secure
+     */
+    holidayRequestGetMine: (params: RequestParams = {}) =>
+      this.request<HolidayRequestSummary[], any>({
+        path: `/api/holiday-requests/mine`,
+        method: "GET",
+        secure: true,
+        format: "json",
         ...params,
       }),
   };

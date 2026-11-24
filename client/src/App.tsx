@@ -6,6 +6,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { EmployeesPage } from "./pages/EmployeesPage";
 import { ApplyPage } from "./pages/ApplyPage";
 import { ApprovalsPage } from "./pages/ApprovalsPage";
+import { MyRequestsPage } from "./pages/MyRequestsPage";
 
 import SchedulePage from "./pages/SchedulePage";
 import "./index.css";
@@ -33,7 +34,7 @@ const router = createBrowserRouter([
 
                     { path: "approvals", element: <ApprovalsPage /> },
 
-                    { path: "my-requests", element: <ComingSoonPage title="My requests" description="Follow your holiday requests and ask to cancel approved holiday you have not used yet." /> },
+                    { path: "my-requests", element: <MyRequestsPage />},
 
                     { path: "team-calendar", element: <ComingSoonPage title="Team calendar" description="See who is away and how many are at work each day." /> },
 

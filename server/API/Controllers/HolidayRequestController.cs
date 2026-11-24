@@ -53,20 +53,27 @@ public class HolidayRequestController(HolidayRequestService holidayRequestServic
         }
     }
 
-    [HttpPost("{id}/reject")]
-    [Authorize(Roles = "Accountant")]
-    public async Task<IActionResult> Reject(string id)
+[HttpPost("{id}/reject")]
+[Authorize(Roles = "Accountant")]
+public async Task<IActionResult> Reject(
+    string id,
+    RejectHolidayRequest request)
+{
+    try
     {
-        try
-        {
-            await holidayRequestService.RejectAsync(id, CurrentUserId, "");
-            return NoContent();
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        await holidayRequestService.RejectAsync(
+            id,
+            CurrentUserId,
+            request.Reason
+        );
+
+        return NoContent();
     }
+    catch (ArgumentException ex)
+    {
+        return BadRequest(ex.Message);
+    }
+}
 
     [HttpGet("mine")]
     public async Task<ActionResult<List<HolidayRequestSummary>>> GetMine()

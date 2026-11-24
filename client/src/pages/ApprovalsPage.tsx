@@ -50,7 +50,6 @@ export function ApprovalsPage() {
         setReason("");
         setError(null);
     }
-
     async function confirmReject() {
         if (!rejectingId) return;
 
@@ -65,9 +64,16 @@ export function ApprovalsPage() {
         setError(null);
 
         try {
-            await api.holidayRequest.holidayRequestReject(rejectingId);
+            await api.holidayRequest.holidayRequestReject(
+                rejectingId,
+                {
+                    reason: text,
+                }
+            );
+
             setRejectingId(null);
             setReason("");
+
             await load();
         } catch (err) {
             setError(await errorText(err, "Could not save the decision."));

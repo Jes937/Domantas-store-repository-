@@ -25,3 +25,6 @@ public record PendingRequest(
     HolidayAccount Account,
     decimal Hours);
 
+public record RejectHolidayRequest(
+    string Reason
+);
