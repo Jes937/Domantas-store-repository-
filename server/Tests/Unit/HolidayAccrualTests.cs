@@ -35,4 +35,24 @@ public class HolidayAccrualTests
     {
         Assert.Equal(12.5m, HolidayAccrual.MonthlyHours(PartTime, HolidayAccount.Week1To5));
     }
+
+    private static readonly DateOnly Today = new(2026, 11, 24);
+
+    [Fact]
+    public void EarnedUntil_BeforeMonthEnd_IsZero()
+    {
+        Assert.Equal(0m, HolidayAccrual.EarnedBetween([FullTime], HolidayAccount.Week1To5, Today, new DateOnly(2026, 11, 29)));
+    }
+
+    [Fact]
+    public void EarnedUntil_EndOfMonth_IsOneMonth()
+    {
+        Assert.Equal(15.42m, HolidayAccrual.EarnedBetween([FullTime], HolidayAccount.Week1To5, Today, new DateOnly(2026, 11, 30)));
+    }
+
+    [Fact]
+    public void EarnedUntil_December_IsTwoMonths()
+    {
+        Assert.Equal(30.84m, HolidayAccrual.EarnedBetween([FullTime], HolidayAccount.Week1To5, Today, new DateOnly(2026, 12, 31)));
+    }
 }
