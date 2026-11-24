@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { getCurrentUser } from "../auth";
 import { HolidayYearCard}  from "./HolidayYearCard";
+import { TopBar } from "./TopBar";
 
 // Shared layout: dark sidebar on the left, the current page on the right
 export function Layout() {
@@ -86,10 +87,13 @@ export function Layout() {
                 </div>
             </aside>
 
-            <main className="app-main">
-                {/* The current page is shown here */}
-                <Outlet />
-            </main>
+            <div className="app-content">
+                <TopBar />
+                <main className="app-main">
+                    {/* The current page is shown here */}
+                    <Outlet />
+                </main>
+            </div>
         </div>
     );
 }
