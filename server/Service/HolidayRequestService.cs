@@ -95,13 +95,16 @@ public class HolidayRequestService(UserDataBase db)
         await transaction.CommitAsync();
     }
     
-    public async Task RejectAsync(string requestId, string accountantId)
+    public async Task RejectAsync(string requestId, string accountantId, string reason)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+
         var request = await GetPendingRequest(requestId);
 
         request.Status = RequestStatus.Rejected;
         request.DecidedBy = accountantId;
         request.Decided = DateTime.UtcNow;
+        request.DecisionNote = reason.Trim();
         await db.UpdateAsync(request);
     }
     
@@ -115,4 +118,22 @@ public class HolidayRequestService(UserDataBase db)
 
         return request;
     }
+public async Task<List<HolidayRequestSummary>> GetOwnAsync(string userId)
+{
+    var rows = await db.GetTable<HolidayRequestDB>()
+        .Where(x => x.UserId == userId)
+        .OrderByDescending(x => x.StartDate)
+        .ToListAsync();
+
+    return rows
+        .Select(x => new HolidayRequestSummary(
+            x.RequestId,
+            x.StartDate,
+            x.EndDate,
+            x.Account,
+            x.Hours,
+            x.Status,
+            x.Status == RequestStatus.Rejected ? x.DecisionNote : null))
+        .ToList();
+}
 }

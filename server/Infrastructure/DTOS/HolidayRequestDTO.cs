@@ -14,7 +14,8 @@ public record HolidayRequestSummary(
     DateOnly EndDate,
     HolidayAccount Account,
     decimal Hours,
-    RequestStatus Status);
+    RequestStatus Status,
+    string? Reason = null);
 
 public record PendingRequest(
     string RequestId,
@@ -22,4 +23,5 @@ public record PendingRequest(
     DateOnly StartDate,
     DateOnly EndDate,
     HolidayAccount Account,
-    decimal Hours);    
+    decimal Hours);
+
