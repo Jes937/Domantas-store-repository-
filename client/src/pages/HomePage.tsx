@@ -23,7 +23,9 @@ export function HomePage() {
     }, []);
 
     useEffect(() => {
-        api.balance.balanceGet({ date: date || undefined }).then(res => setBalance(res.data));
+        api.balance.balanceGet({ date: date || undefined })
+            .then(res => setBalance(res.data))
+            .catch(() => setError("Could not load your balance"));
     }, [date]);
 
     return (
