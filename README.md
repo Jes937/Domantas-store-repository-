@@ -72,7 +72,7 @@ There are three roles. Every person has an Employee account. There is exactly on
 | `GET /api/Health` | Everyone |
 | `GET /api/weeks` | Logged in users |
 | `POST /api/holiday-requests` | Logged in users (always for themselves) |
-| `GET /api/balance` | Logged in users (always their own) |
+| `GET /api/balance` (+ `?date=` for a future date) | Logged in users (always their own) |
 | `GET /api/holiday-requests/pending` | Accountant |
 | `POST /api/holiday-requests/{id}/approve` / `reject` | Accountant |
 | `GET /api/users/{userId}/schedule` (+ `/history`) | The user themself, Accountant, System owner |
