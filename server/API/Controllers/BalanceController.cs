@@ -11,9 +11,9 @@ namespace API.Controllers;
 public class BalanceController(BalanceService balanceService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<List<AccountBalance>>> Get()
+    public async Task<ActionResult<List<AccountBalance>>> Get(DateOnly? date)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
-        return Ok(await balanceService.GetAsync(userId));
+        return Ok(await balanceService.GetAsync(userId, date));
     }
 }
