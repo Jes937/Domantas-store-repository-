@@ -855,7 +855,30 @@ h1 {
   color: var(--text-muted);
 }
 
-/* Balance rings (empty until the balance endpoint exists) */
+/* Balance card header with the date picker on the right */
+.overview-balance-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.overview-date {
+  min-width: 200px;
+}
+
+.overview-date label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.overview-date input {
+  height: 38px;
+}
+
+/* Balance rings: the colour comes from conic-gradient in HomePage.tsx */
 .overview-rings {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -877,114 +900,4 @@ h1 {
   margin: 6px 0 0;
   font-size: 13px;
   color: var(--text-muted);
-}
-
-.overview-ring {
-  width: 112px;
-  height: 112px;
-  flex: none;
-  border-radius: 999px;
-  border: 12px solid #eef1f4;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.overview-ring span {
-  font-family: "Geist Mono", monospace;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.overview-ring small {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-/* Dark "Next holiday" card */
-.overview-next {
-  background: var(--navy);
-  color: var(--sidebar-text);
-  border-radius: var(--radius);
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.overview-next-label {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--sidebar-muted);
-}
-
-.overview-next-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.overview-next-sub {
-  font-size: 13px;
-}
-
-/* My work schedule bars */
-.schedule-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.schedule-bar-row {
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) 64px;
-  gap: 10px;
-  align-items: center;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.schedule-bar-track {
-  height: 10px;
-  border-radius: 999px;
-  background: #eef1f4;
-  overflow: hidden;
-}
-
-.schedule-bar-track span {
-  display: block;
-  height: 100%;
-  background: var(--accent);
-  border-radius: 999px;
-}
-
-.schedule-bar-hours {
-  font-family: "Geist Mono", monospace;
-  text-align: right;
-  color: var(--text);
-}
-
-.schedule-bar-total {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid #eef1f4;
-  font-size: 13px;
-}
-
-.schedule-bar-total strong {
-  font-family: "Geist Mono", monospace;
-}
-
-.overview-manage {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
 }

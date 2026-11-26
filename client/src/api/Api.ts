@@ -37,6 +37,14 @@ export interface LoginRequest {
   password?: string;
 }
 
+export interface AccountBalance {
+  account?: HolidayAccount;
+  /** @format decimal */
+  hours?: number;
+  /** @format date */
+  expiresOn?: string | null;
+}
+
 export interface HealthResponse {
   status?: string;
   /** @format date-time */
@@ -53,6 +61,7 @@ export interface HolidayRequestSummary {
   /** @format decimal */
   hours?: number;
   status?: RequestStatus;
+  reason?: string | null;
 }
 
 export interface CreateHolidayRequest {
@@ -73,6 +82,10 @@ export interface PendingRequest {
   account?: HolidayAccount;
   /** @format decimal */
   hours?: number;
+}
+
+export interface RejectHolidayRequest {
+  reason?: string;
 }
 
 export interface ScheduleVersion {
@@ -413,6 +426,31 @@ export class Api<
         ...params,
       }),
   };
+  balance = {
+    /**
+     * No description
+     *
+     * @tags Balance
+     * @name BalanceGet
+     * @request GET:/api/balance
+     * @secure
+     */
+    balanceGet: (
+      query?: {
+        /** @format date */
+        date?: string | null;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AccountBalance[], any>({
+        path: `/api/balance`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+  };
   health = {
     /**
      * No description
@@ -495,11 +533,34 @@ export class Api<
      * @request POST:/api/holiday-requests/{id}/reject
      * @secure
      */
-    holidayRequestReject: (id: string, params: RequestParams = {}) =>
+    holidayRequestReject: (
+      id: string,
+      data: RejectHolidayRequest,
+      params: RequestParams = {},
+    ) =>
       this.request<Blob, any>({
         path: `/api/holiday-requests/${id}/reject`,
         method: "POST",
+        body: data,
         secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestGetMine
+     * @request GET:/api/holiday-requests/mine
+     * @secure
+     */
+    holidayRequestGetMine: (params: RequestParams = {}) =>
+      this.request<HolidayRequestSummary[], any>({
+        path: `/api/holiday-requests/mine`,
+        method: "GET",
+        secure: true,
+        format: "json",
         ...params,
       }),
   };

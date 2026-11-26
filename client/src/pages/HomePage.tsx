@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
 import { api } from "../api/client";
-import type { ScheduleVersion } from "../api/Api";
+import {
+    HolidayAccount,
+    RequestStatus,
+    type AccountBalance,
+    type HolidayRequestSummary,
+    type ScheduleVersion,
+} from "../api/Api";
 import { getCurrentUser } from "../auth";
 
 // Monday to Friday, with the keys the API uses
@@ -22,16 +28,55 @@ function greeting() {
     return "Good evening";
 }
 
+// "2026-12-21" → "Mon 21 Dec"
+function shortDate(iso: string) {
+    return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+
+function todayIso() {
+    return new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD
+}
+
+// One ring: how much of the year's holiday is still free
+function BalanceRing({ title, hours, yearHours, note }: { title: string; hours: number | null; yearHours: number; note: string }) {
+    const percent = hours === null || yearHours <= 0 ? 0 : Math.max(0, Math.min(100, (hours / yearHours) * 100));
+
+    return (
+        <div className="overview-ring-box">
+            <div className="overview-ring" style={{ background: `conic-gradient(var(--accent) ${percent}%, #eef1f4 0)` }}>
+                <div className="overview-ring-inner">
+                    <span>{hours === null ? "–" : hours.toFixed(2)}</span>
+                    <small>hours free</small>
+                </div>
+            </div>
+            <div>
+                <strong>{title}</strong>
+                <p>{note}</p>
+            </div>
+        </div>
+    );
+}
+
 // Overview page - the first page after login
 export function HomePage() {
     const user = getCurrentUser();
     const canManage = user?.role === "Accountant" || user?.role === "SystemOwner";
     const firstName = (user?.name ?? "").split(" ")[0];
 
+    const [apiError, setApiError] = useState<string | null>(null);
     const [schedule, setSchedule] = useState<ScheduleVersion | null>(null);
     const [scheduleError, setScheduleError] = useState(false);
+    const [balance, setBalance] = useState<AccountBalance[]>([]);
+    const [balanceError, setBalanceError] = useState(false);
+    const [balanceDate, setBalanceDate] = useState("");
+    const [requests, setRequests] = useState<HolidayRequestSummary[]>([]);
 
-    // Load my own work schedule for today
+    // Warn if the API is not running
+    useEffect(() => {
+        api.health.healthGet().catch(() => setApiError("Could not reach the API"));
+    }, []);
+
+    // My own work schedule for today
     useEffect(() => {
         if (!user?.id) return;
         api.schedule.scheduleGet(user.id)
@@ -39,9 +84,36 @@ export function HomePage() {
             .catch(() => setScheduleError(true));
     }, [user?.id]);
 
+    // My balance - today, or on a chosen future date (Domantas, #43)
+    useEffect(() => {
+        api.balance.balanceGet({ date: balanceDate || undefined })
+            .then(res => { setBalance(res.data); setBalanceError(false); })
+            .catch(() => setBalanceError(true));
+    }, [balanceDate]);
+
+    // My requests, to find the next holiday
+    useEffect(() => {
+        api.holidayRequest.holidayRequestGetMine()
+            .then(res => setRequests(res.data))
+            .catch(() => setRequests([]));
+    }, []);
+
     const hours = WORKDAYS.map(d => schedule?.hours?.[d.key] ?? 0);
     const maxHours = Math.max(8, ...hours);
     const weekTotal = hours.reduce((sum, h) => sum + h, 0);
+
+    const weeks = balance.find(b => b.account === HolidayAccount.Week1To5);
+    const sixth = balance.find(b => b.account === HolidayAccount.Week6);
+
+    // Next holiday: the first approved or pending request that has not started yet
+    const next = requests
+        .filter(r => (r.status === RequestStatus.Pending || r.status === RequestStatus.Approved)
+            && (r.startDate ?? "") >= todayIso())
+        .sort((a, b) => (a.startDate ?? "").localeCompare(b.startDate ?? ""))[0];
+
+    const daysUntil = next?.startDate
+        ? Math.round((new Date(next.startDate + "T00:00:00").getTime() - new Date(todayIso() + "T00:00:00").getTime()) / 86400000)
+        : 0;
 
     return (
         <section className="overview">
@@ -53,34 +125,67 @@ export function HomePage() {
                 <Link to="/apply" className="btn btn-primary overview-apply">+ Apply for holiday</Link>
             </div>
 
+            {apiError && <p className="alert" role="alert">{apiError}</p>}
+
             <div className="overview-grid">
-                {/* Left: holiday balance (needs a new endpoint - round 2) */}
+                {/* Left: holiday balance */}
                 <div className="card overview-balance">
-                    <h2>Holiday balance <span className="badge badge-neutral">Coming soon</span></h2>
-                    <div className="overview-rings">
-                        <div className="overview-ring-box">
-                            <div className="overview-ring"><span>–</span><small>hours free</small></div>
-                            <div>
-                                <strong>Weeks 1–5</strong>
-                                <p>Up to 37.00 h holiday debt · 0 or more on 31 Aug</p>
-                            </div>
-                        </div>
-                        <div className="overview-ring-box">
-                            <div className="overview-ring"><span>–</span><small>hours free</small></div>
-                            <div>
-                                <strong>6th holiday week</strong>
-                                <p>Separate account · no holiday debt</p>
-                            </div>
+                    <div className="overview-balance-head">
+                        <h2 style={{ margin: 0 }}>Holiday balance</h2>
+                        <div className="field overview-date">
+                            <label htmlFor="balanceDate">See balance on a date</label>
+                            <input id="balanceDate" type="date" value={balanceDate}
+                                   onChange={(e) => setBalanceDate(e.target.value)} />
                         </div>
                     </div>
+
+                    {balanceError && <p className="alert" role="alert">Could not load your balance.</p>}
+
+                    <div className="overview-rings">
+                        <BalanceRing
+                            title="Weeks 1–5"
+                            hours={weeks?.hours ?? null}
+                            yearHours={weekTotal * 5}
+                            note={weeks?.expiresOn ? `Expires ${weeks.expiresOn}` : "Up to 1 week holiday debt · 0 or more on 31 Aug"}
+                        />
+                        <BalanceRing
+                            title="6th holiday week"
+                            hours={sixth?.hours ?? null}
+                            yearHours={weekTotal}
+                            note={sixth?.expiresOn ? `Expires ${sixth.expiresOn}` : "Separate account · no holiday debt"}
+                        />
+                    </div>
+
+                    <p className="overview-muted" style={{ marginTop: 16, marginBottom: 0 }}>
+                        {balanceDate ? `Showing your balance on ${shortDate(balanceDate)}.` : "Showing your balance today."}{" "}
+                        <Link to="/my-requests">See my requests</Link>
+                    </p>
                 </div>
 
                 {/* Right column */}
                 <div className="overview-side">
                     <div className="overview-next">
                         <span className="overview-next-label">Next holiday</span>
-                        <span className="overview-next-title">Coming soon</span>
-                        <span className="overview-next-sub">Your next approved or pending holiday will show here.</span>
+                        {next?.startDate && next.endDate ? (
+                            <>
+                                <span className="overview-next-title">
+                                    {next.startDate === next.endDate
+                                        ? shortDate(next.startDate)
+                                        : `${shortDate(next.startDate)} – ${shortDate(next.endDate)}`}
+                                </span>
+                                <span className="overview-next-chips">
+                                    <span>{(next.hours ?? 0).toFixed(2)} h</span>
+                                    <span>{next.account === HolidayAccount.Week6 ? "6th week" : "Weeks 1–5"}</span>
+                                    <span>{next.status === RequestStatus.Pending ? "Pending" : "Approved"}</span>
+                                    <span>{daysUntil === 0 ? "today" : `in ${daysUntil} days`}</span>
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                <span className="overview-next-title">No holiday planned</span>
+                                <span className="overview-next-sub">Apply for holiday and it will show here.</span>
+                            </>
+                        )}
                     </div>
 
                     <div className="card">
