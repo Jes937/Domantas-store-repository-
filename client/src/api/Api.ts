@@ -435,10 +435,17 @@ export class Api<
      * @request GET:/api/balance
      * @secure
      */
-    balanceGet: (params: RequestParams = {}) =>
+    balanceGet: (
+      query?: {
+        /** @format date */
+        date?: string | null;
+      },
+      params: RequestParams = {},
+    ) =>
       this.request<AccountBalance[], any>({
         path: `/api/balance`,
         method: "GET",
+        query: query,
         secure: true,
         format: "json",
         ...params,

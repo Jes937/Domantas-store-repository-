@@ -10,6 +10,7 @@ export function HomePage() {
     const [health, setHealth] = useState<HealthResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [balance, setBalance] = useState<AccountBalance[]>([]);
+    const [date, setDate] = useState("");
     const user = getCurrentUser();
     const canManage = user?.role === "Accountant" || user?.role === "SystemOwner";
 
@@ -19,9 +20,13 @@ export function HomePage() {
             .healthGet()
             .then(res => setHealth(res.data))
             .catch(() => setError("Could not reach the API"));
-        
-        api.balance.balanceGet().then(res => setBalance(res.data));
     }, []);
+
+    useEffect(() => {
+        api.balance.balanceGet({ date: date || undefined })
+            .then(res => setBalance(res.data))
+            .catch(() => setError("Could not load your balance"));
+    }, [date]);
 
     return (
         <section>
@@ -43,6 +48,11 @@ export function HomePage() {
 
                 <div className="card">
                     <h2>Holiday balance</h2>
+                    <div className="field">
+                        <label htmlFor="balanceDate">On date (leave empty for today)</label>
+                        <input id="balanceDate" type="date" value={date}
+                               onChange={(e) => setDate(e.target.value)} />
+                    </div>
                     {balance.map(b => (
                         <p key={b.account}>
                             <strong>{b.account === HolidayAccount.Week6 ? "Week 6" : "Weeks 1-5"}:</strong>{" "}
