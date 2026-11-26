@@ -20,7 +20,7 @@ export enum RequestStatus {
   Pending = 0,
   Approved = 1,
   Rejected = 2,
-  Canceled = 3,
+  Cancelled = 3,
 }
 
 export enum HolidayAccount {
@@ -561,6 +561,22 @@ export class Api<
         method: "GET",
         secure: true,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestCancel
+     * @request POST:/api/holiday-requests/{id}/cancel
+     * @secure
+     */
+    holidayRequestCancel: (id: string, params: RequestParams = {}) =>
+      this.request<Blob, any>({
+        path: `/api/holiday-requests/${id}/cancel`,
+        method: "POST",
+        secure: true,
         ...params,
       }),
   };
