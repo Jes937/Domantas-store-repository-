@@ -36,7 +36,7 @@ public class HolidayRequestService(UserDataBase db)
             .Where(x => x.UserId == userId)
             .ToListAsync();
 
-        var available = HolidayBalance.Available(request.Account, entries, requests);
+        var available = HolidayBalance.Available(request.Account, entries, requests, request.StartDate);
 
         if (hours > available)
             throw new ArgumentException($"Not enough holiday on this account. You have {available:0.##} hours, this costs {hours:0.##}.");
@@ -219,5 +219,5 @@ public async Task<List<PendingRequest>> GetApprovedAsync()
                 r.Account,
                 r.Hours))
         .ToListAsync();
-}
+    }
 }
