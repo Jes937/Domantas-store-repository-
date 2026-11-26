@@ -68,6 +68,12 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 24px;
+
+  /* Stay in place while the page scrolls */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .sidebar-brand {
@@ -227,6 +233,9 @@ h1 {
   }
   .sidebar {
     width: 100%;
+    position: static;
+    height: auto;
+    overflow-y: visible;
   }
 }
 
@@ -710,4 +719,633 @@ h1 {
 .week-total {
   font-family: "Geist Mono", monospace;
   font-weight: 600;
+}
+
+/* ---------- Holiday year card (sidebar) ---------- */
+.year-card {
+  background: var(--navy-raised);
+  border: 1px solid var(--navy-border);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.year-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.year-card-title {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.year-card-percent {
+  font-family: "Geist Mono", monospace;
+  color: var(--sidebar-text);
+}
+
+.year-card-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--navy-border);
+  overflow: hidden;
+}
+
+.year-card-bar div {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent-light);
+}
+
+.year-card-sub {
+  font-size: 12px;
+  color: #9fb2bb;
+}
+
+/* ---------- Top bar (breadcrumb + week) ---------- */
+.app-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 64px;
+  padding: 12px 32px;
+  box-sizing: border-box;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.breadcrumb-current {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.date-chip {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ---------- Overview page ---------- */
+
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1240px;
+}
+
+/* Heading on the left, Apply button on the right */
+.overview-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.overview-header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 660px;
+}
+
+.overview-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.overview-header p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
+/* Links that look like buttons */
+.overview .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.overview .btn:disabled {
+  background: var(--bg);
+  color: #5d6b75;
+  cursor: default;
+}
+
+/* Card heading with something on the right */
+.overview-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.overview-card-head h2 {
+  margin: 0;
+}
+
+.muted {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ----- Top row ----- */
+.overview-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.overview-balance {
+  flex: 2 1 560px;
+  min-width: 0;
+}
+
+.overview-side {
+  flex: 1 1 300px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Free / Planned / Used */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.legend-free { background: var(--accent); }
+.legend-planned { background: #e39a2d; }
+.legend-used { background: #c8d0d6; }
+
+/* Accounts: side by side on wide screens, stacked when the card is narrow */
+.overview-accounts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 12px;
+}
+
+/* Each account in its own soft box */
+.account {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 18px;
+  border: 1px solid #eef1f4;
+  border-radius: 12px;
+}
+
+/* Ring */
+.ring {
+  position: relative;
+  width: 108px;
+  height: 108px;
+  flex: none;
+}
+
+.ring svg {
+  width: 108px;
+  height: 108px;
+}
+
+.ring circle {
+  fill: none;
+  stroke-width: 12;
+}
+
+.ring-track { stroke: #eef1f4; }
+.ring-free { stroke: var(--accent); }
+.ring-planned { stroke: #e39a2d; }
+.ring-used { stroke: #c8d0d6; }
+
+.ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring-label span {
+  font-family: "Geist Mono", monospace;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.ring-label small {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Rows next to the ring */
+.account-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.account-rows strong {
+  font-size: 14px;
+}
+
+.account-rows div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.account-rows b {
+  margin-left: auto;
+  font-family: "Geist Mono", monospace;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.account-rows small {
+  font-size: 12px;
+  color: #5d6b75;
+  border-top: 1px solid #eef1f4;
+  padding-top: 8px;
+}
+
+/* Dark "Next holiday" card */
+.overview-next {
+  background: var(--navy);
+  color: var(--sidebar-text);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.overview-next-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.overview-next-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sidebar-muted);
+}
+
+.overview-next-title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.overview-next-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.overview-next-chips span {
+  background: var(--navy-active);
+  border-radius: 8px;
+  padding: 4px 9px;
+}
+
+.mono {
+  font-family: "Geist Mono", monospace;
+}
+
+.overview-next-link {
+  font-size: 13px;
+  color: var(--accent-light);
+  text-decoration: none;
+}
+
+.overview-next-link:hover {
+  text-decoration: underline;
+}
+
+/* "Cancel request" link-button in the dark card */
+.overview-next-cancel {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-light);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.overview-next-cancel:hover {
+  text-decoration: underline;
+}
+
+/* Status pill */
+.pill {
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 2px 9px;
+  color: var(--navy);
+}
+
+.pill-pending { background: var(--warning); }
+.pill-approved { background: #86efac; }
+
+/* Transfer card */
+.overview-transfer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px;
+}
+
+.overview-transfer h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.overview-transfer p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.overview-transfer-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #5d6b75;
+}
+
+.overview-transfer-foot .btn {
+  height: 40px;
+  font-size: 13px;
+}
+
+/* ----- Plan ahead ----- */
+.overview-plan {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.overview-plan-text {
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.overview-plan-text h2 {
+  margin: 0;
+}
+
+.overview-plan-text p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.overview-plan-result {
+  margin-top: auto;
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.overview-plan-result strong {
+  font-family: "Geist Mono", monospace;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.overview-plan-chart {
+  flex: 3 1 520px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plan-bars {
+  display: grid;
+  gap: 8px;
+  align-items: end;
+  height: 170px;
+}
+
+.plan-bar {
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px 8px 4px 4px;
+  background: #dce7ec;
+  color: var(--accent-dark);
+  font-family: "Geist Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 6px;
+  cursor: pointer;
+}
+
+.plan-bar:hover {
+  background: #c9dbe3;
+}
+
+.plan-bar-picked,
+.plan-bar-picked:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.plan-labels {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  color: #5d6b75;
+  text-align: center;
+}
+
+.plan-label-picked {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ----- Bottom row ----- */
+.overview-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.overview-bottom > .card {
+  flex: 2 1 420px;
+  min-width: 0;
+}
+
+.overview-bottom > .overview-manage {
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.overview-manage h2 {
+  margin: 0;
+}
+
+.overview-manage p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.overview-manage .btn {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+/* My work schedule bars */
+.schedule-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.schedule-bar-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 64px;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.schedule-bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background: #eef1f4;
+  overflow: hidden;
+}
+
+.schedule-bar-track span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.schedule-bar-hours {
+  font-family: "Geist Mono", monospace;
+  text-align: right;
+  color: var(--text);
+}
+
+.overview-transfer {
+  flex: 1;
+}
+
+/* ---------- Compact sidebar so it fits on one screen ---------- */
+.sidebar {
+  gap: 12px;
+  scrollbar-width: none; /* hide the inner scrollbar */
+}
+
+.sidebar-label {
+  padding: 10px 10px 6px;
+}
+
+.sidebar-link {
+  min-height: 38px;
+}
+
+.sidebar-bottom {
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.year-card {
+  padding: 10px 12px;
+  gap: 6px;
+}
+
+.logout-button {
+  height: 36px;
 }
