@@ -10,5 +10,6 @@ public class Seeder
             db.CreateTable<HolidayRequestDB>(tableOptions: TableOptions.CreateIfNotExists);
             db.CreateTable<LedgerEntriesDB>(tableOptions: TableOptions.CreateIfNotExists);  
             db.CreateTable<DatesDB>(tableOptions: TableOptions.CreateIfNotExists);
+            db.CreateTable<HolidaysDB>(tableOptions: TableOptions.CreateIfNotExists);
     }
 }

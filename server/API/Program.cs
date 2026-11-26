@@ -23,6 +23,7 @@ builder.Services.AddScoped<TokenServices>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WorkScheduleService>();
 builder.Services.AddScoped<HolidayRequestService>();
+builder.Services.AddScoped<HolidaysService>();
 
 // Authentication (JWT)
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(o =>
