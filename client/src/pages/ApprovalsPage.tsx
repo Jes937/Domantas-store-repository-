@@ -15,10 +15,18 @@ export function ApprovalsPage() {
     const [busy, setBusy] = useState(false);
     const [rejectingId, setRejectingId] = useState<string | null>(null);
     const [reason, setReason] = useState("");
+    const [approvedRequests, setApprovedRequests] = useState<PendingRequest[]>([]);
+
 
     async function load() {
-        const res = await api.holidayRequest.holidayRequestGetPending();
-        setRequests(res.data);
+        const pending =
+            await api.holidayRequest.holidayRequestGetPending();
+
+        const approved =
+            await api.holidayRequest.holidayRequestGetApproved();
+
+        setRequests(pending.data);
+        setApprovedRequests(approved.data);
     }
 
     useEffect(() => {
@@ -77,6 +85,20 @@ export function ApprovalsPage() {
             await load();
         } catch (err) {
             setError(await errorText(err, "Could not save the decision."));
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    async function cancelApproved(id: string) {
+        setBusy(true);
+        setError(null);
+
+        try {
+            await api.holidayRequest.holidayRequestCancelApproved(id);
+            await load();
+        } catch (err) {
+            setError(await errorText(err, "Could not cancel holiday."));
         } finally {
             setBusy(false);
         }
@@ -150,6 +172,53 @@ export function ApprovalsPage() {
                     </table>
                 </div>
             )}
+            <div className="card" style={{ marginTop: 24 }}>
+                <h2>Approved holidays</h2>
+
+                {approvedRequests.length === 0 ? (
+                    <p>No approved holidays.</p>
+                ) : (
+                    <table className="table">
+                        <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Account</th>
+                            <th>Hours</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {approvedRequests.map((r) => (
+                            <tr key={r.requestId}>
+                                <td>{r.userName}</td>
+                                <td>{r.startDate}</td>
+                                <td>{r.endDate}</td>
+                                <td>
+                                    {r.account === HolidayAccount.Week6
+                                        ? "Week 6"
+                                        : "Weeks 1-5"}
+                                </td>
+                                <td>{(r.hours ?? 0).toFixed(2)}</td>
+                                <td>
+                                    <button
+                                        className="btn"
+                                        disabled={busy}
+                                        onClick={() =>
+                                            cancelApproved(r.requestId!)
+                                        }
+                                    >
+                                        Cancel holiday
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
         </section>
     );
 }

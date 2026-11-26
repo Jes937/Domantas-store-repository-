@@ -579,6 +579,39 @@ export class Api<
         secure: true,
         ...params,
       }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestGetApproved
+     * @request GET:/api/holiday-requests/approved
+     * @secure
+     */
+    holidayRequestGetApproved: (params: RequestParams = {}) =>
+      this.request<PendingRequest[], any>({
+        path: `/api/holiday-requests/approved`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestCancelApproved
+     * @request POST:/api/holiday-requests/{id}/cancel-approved
+     * @secure
+     */
+    holidayRequestCancelApproved: (id: string, params: RequestParams = {}) =>
+      this.request<Blob, any>({
+        path: `/api/holiday-requests/${id}/cancel-approved`,
+        method: "POST",
+        secure: true,
+        ...params,
+      }),
   };
   schedule = {
     /**
