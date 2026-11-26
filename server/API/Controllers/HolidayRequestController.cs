@@ -98,4 +98,26 @@ public async Task<IActionResult> Reject(
             return BadRequest(ex.Message);
         }
     }
+
+[HttpGet("approved")]
+[Authorize(Roles = "Accountant")]
+public async Task<ActionResult<List<PendingRequest>>> GetApproved()
+{
+    return Ok(await holidayRequestService.GetApprovedAsync());
+}
+
+[HttpPost("{id}/cancel-approved")]
+[Authorize(Roles = "Accountant")]
+public async Task<IActionResult> CancelApproved(string id)
+{
+    try
+    {
+        await holidayRequestService.CancelApprovedAsync(id);
+        return NoContent();
+    }
+    catch (ArgumentException ex)
+    {
+        return BadRequest(ex.Message);
+    }
+}
 }

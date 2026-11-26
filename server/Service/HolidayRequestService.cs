@@ -170,4 +170,54 @@ public async Task CancelAsync(string requestId, string userId)
         _ => "This request has already been decided."
     });
 }
+
+public async Task CancelApprovedAsync(string requestId)
+{
+    var request = await db.GetTable<HolidayRequestDB>()
+        .FirstOrDefaultAsync(x => x.RequestId == requestId);
+
+    if (request == null)
+        throw new ArgumentException("Request not found");
+
+    if (request.Status != RequestStatus.Approved)
+        throw new ArgumentException(
+            "Only approved requests can be cancelled.");
+
+    await using var transaction = await db.BeginTransactionAsync();
+
+    await db.GetTable<HolidayRequestDB>()
+        .Where(x => x.RequestId == requestId)
+        .Set(x => x.Status, RequestStatus.Cancelled)
+        .UpdateAsync();
+
+    await db.InsertAsync(new LedgerEntriesDB
+    {
+        EntryId = Guid.NewGuid().ToString(),
+        UserId = request.UserId,
+        Account = request.Account,
+        EntryType = LedgerEntryType.Adjustment,
+        Hours = request.Hours,
+        EntryDate = DateOnly.FromDateTime(DateTime.Today),
+        RequestId = request.RequestId
+    });
+
+    await transaction.CommitAsync();
+}
+public async Task<List<PendingRequest>> GetApprovedAsync()
+{
+    return await (
+            from r in db.GetTable<HolidayRequestDB>()
+            join u in db.GetTable<UserDB>()
+                on r.UserId equals u.UserId
+            where r.Status == RequestStatus.Approved
+            orderby r.StartDate
+            select new PendingRequest(
+                r.RequestId,
+                u.UserName,
+                r.StartDate,
+                r.EndDate,
+                r.Account,
+                r.Hours))
+        .ToListAsync();
+}
 }
