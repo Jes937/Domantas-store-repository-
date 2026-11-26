@@ -1,5 +1,6 @@
-// Reads the logged-in user's name and role from the JWT token
+// Reads the logged-in user's id, name and role from the JWT token
 export type CurrentUser = {
+    id: string;
     name: string;
     role: string; // "Employee", "Accountant" or "SystemOwner"
 };
@@ -17,6 +18,10 @@ export function getCurrentUser(): CurrentUser | null {
         );
 
         return {
+            id: payload.nameid
+                ?? payload.sub
+                ?? payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]
+                ?? "",
             name: payload.unique_name
                 ?? payload.name
                 ?? payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]
