@@ -68,6 +68,12 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 24px;
+
+  /* Stay in place while the page scrolls */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .sidebar-brand {
@@ -227,6 +233,9 @@ h1 {
   }
   .sidebar {
     width: 100%;
+    position: static;
+    height: auto;
+    overflow-y: visible;
   }
 }
 
@@ -922,25 +931,34 @@ h1 {
 .legend-planned { background: #e39a2d; }
 .legend-used { background: #c8d0d6; }
 
-/* The two accounts side by side */
+/* Accounts: side by side on wide screens, stacked when the card is narrow */
 .overview-accounts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 12px;
 }
 
+/* Each account in its own soft box */
 .account {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
+  padding: 16px 18px;
+  border: 1px solid #eef1f4;
+  border-radius: 12px;
 }
 
 /* Ring */
 .ring {
   position: relative;
-  width: 124px;
-  height: 124px;
+  width: 108px;
+  height: 108px;
   flex: none;
+}
+
+.ring svg {
+  width: 108px;
+  height: 108px;
 }
 
 .ring circle {
@@ -964,7 +982,7 @@ h1 {
 
 .ring-label span {
   font-family: "Geist Mono", monospace;
-  font-size: 21px;
+  font-size: 19px;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
@@ -990,11 +1008,14 @@ h1 {
 .account-rows div {
   display: flex;
   justify-content: space-between;
+  gap: 16px;
+  white-space: nowrap;
   font-size: 13px;
   color: var(--text-muted);
 }
 
 .account-rows b {
+  margin-left: auto;
   font-family: "Geist Mono", monospace;
   font-weight: 400;
   color: var(--text);
@@ -1064,6 +1085,22 @@ h1 {
 }
 
 .overview-next-link:hover {
+  text-decoration: underline;
+}
+
+/* "Cancel request" link-button in the dark card */
+.overview-next-cancel {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-light);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.overview-next-cancel:hover {
   text-decoration: underline;
 }
 
@@ -1279,4 +1316,36 @@ h1 {
   font-family: "Geist Mono", monospace;
   text-align: right;
   color: var(--text);
+}
+
+.overview-transfer {
+  flex: 1;
+}
+
+/* ---------- Compact sidebar so it fits on one screen ---------- */
+.sidebar {
+  gap: 12px;
+  scrollbar-width: none; /* hide the inner scrollbar */
+}
+
+.sidebar-label {
+  padding: 10px 10px 6px;
+}
+
+.sidebar-link {
+  min-height: 38px;
+}
+
+.sidebar-bottom {
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.year-card {
+  padding: 10px 12px;
+  gap: 6px;
+}
+
+.logout-button {
+  height: 36px;
 }

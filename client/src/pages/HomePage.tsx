@@ -151,11 +151,31 @@ export function HomePage() {
 
     // My holiday requests
     useEffect(() => {
-        api.holidayRequest
-            .holidayRequestGetMine()
-            .then(res => setRequests(res.data))
-            .catch(() => setRequests([]));
+        void loadRequests();
     }, []);
+
+    async function loadRequests() {
+        try {
+            const res = await api.holidayRequest.holidayRequestGetMine();
+            setRequests(res.data);
+        } catch {
+            setRequests([]);
+        }
+    }
+
+    // Cancel a pending request (Jes's cancel endpoint)
+    async function cancelRequest(request: HolidayRequestSummary) {
+        if (!window.confirm("Cancel this holiday request?")) return;
+
+        try {
+            await api.holidayRequest.holidayRequestCancel(request.requestId!);
+            await loadRequests();
+            const res = await api.balance.balanceGet();
+            setBalance(res.data);
+        } catch {
+            setApiError("Could not cancel the request");
+        }
+    }
 
     // ---------- Numbers for the cards ----------
 
@@ -289,6 +309,11 @@ export function HomePage() {
                                     <span>{next.account === HolidayAccount.Week6 ? "6th week" : "Weeks 1–5"}</span>
                                     {daysUntil !== null && <span>{daysUntil === 0 ? "Today" : `in ${daysUntil} days`}</span>}
                                 </div>
+                                {next.status === RequestStatus.Pending && (
+                                    <button type="button" className="overview-next-cancel" onClick={() => cancelRequest(next)}>
+                                        Cancel request
+                                    </button>
+                                )}
                             </>
                         ) : (
                             <>
@@ -319,7 +344,7 @@ export function HomePage() {
                         <span>Free on {pickedLabel}</span>
                         <strong>{h(pickedHours)} h</strong>
                         <span>
-                            About {hoursPerDay > 0 ? (pickedHours / hoursPerDay).toFixed(1) : "0"} days of your working days
+                            About {hoursPerDay > 0 ? (pickedHours / hoursPerDay).toFixed(1) : "0"} working days
                         </span>
                     </div>
                 </div>
