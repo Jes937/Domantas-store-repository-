@@ -80,4 +80,22 @@ public async Task<IActionResult> Reject(
     {
         return Ok(await holidayRequestService.GetOwnAsync(CurrentUserId));
     }
+
+    [HttpPost("{id}/cancel")]
+    public async Task<IActionResult> Cancel(string id)
+    {
+        try
+        {
+            await holidayRequestService.CancelAsync(id, CurrentUserId);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }
