@@ -79,4 +79,17 @@ public class HolidayRequestTests : IClassFixture<ApiFactory>
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Apply_SameDaysTwice_Returns400()
+    {
+        await LoginAsEmployee();
+
+        var holiday = new CreateHolidayRequest(Monday.AddDays(7), Monday.AddDays(8), HolidayAccount.Week1To5);
+        
+        await _client.PostAsJsonAsync("/api/holiday-requests", holiday);
+        var second = await _client.PostAsJsonAsync("/api/holiday-requests", holiday);
+        
+        Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode);
+    }
 }
