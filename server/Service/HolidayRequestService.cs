@@ -12,21 +12,21 @@ public class HolidayRequestService(UserDataBase db)
     {
         if (request.EndDate < request.StartDate)
             throw new ArgumentException("End date must be on or after start date");
-        
+
         var schedules = await db.GetTable<DatesDB>()
             .Where(x => x.UserId == userId)
             .ToListAsync();
 
         if (schedules.Count == 0)
             throw new InvalidOperationException("You don't have a work schedule yet");
-        
+
         var daysOff = new List<DateOnly>();
 
         var hours = HolidayCalculator.HoursFor(request.StartDate, request.EndDate, schedules, daysOff);
 
         if (hours == 0)
             throw new ArgumentException("The chosen days are not working days");
-        
+
         // Can't apply for more than you have
         var entries = await db.GetTable<LedgerEntriesDB>()
             .Where(x => x.UserId == userId)
@@ -58,7 +58,7 @@ public class HolidayRequestService(UserDataBase db)
         return new HolidayRequestSummary(
             row.RequestId, row.StartDate, row.EndDate, row.Account, row.Hours, row.Status);
     }
-    
+
     public async Task<List<PendingRequest>> GetPendingAsync()
     {
         return await (
@@ -69,7 +69,7 @@ public class HolidayRequestService(UserDataBase db)
                 select new PendingRequest(r.RequestId, u.UserName, r.StartDate, r.EndDate, r.Account, r.Hours))
             .ToListAsync();
     }
-    
+
   public async Task ApproveAsync(string requestId, string accountantId)
   {
       var request = await GetPendingRequest(requestId);
@@ -99,7 +99,7 @@ public class HolidayRequestService(UserDataBase db)
 
       await transaction.CommitAsync();
   }
-    
+
 public async Task RejectAsync(string requestId, string accountantId, string reason)
 {
     ArgumentException.ThrowIfNullOrWhiteSpace(reason);
@@ -242,5 +242,21 @@ public async Task<List<PendingRequest>> GetApprovedAsync()
                 r.Account,
                 r.Hours))
         .ToListAsync();
+    }
+
+    public async Task<List<TeamHolidayCalendarItem>> GetCalendarAsync()
+    {
+        return await (
+                from r in db.GetTable<HolidayRequestDB>()
+                join u in db.GetTable<UserDB>()
+                    on r.UserId equals u.UserId
+                where r.Status == RequestStatus.Approved
+                orderby r.StartDate
+                select new TeamHolidayCalendarItem(
+                    u.UserName,
+                    r.StartDate,
+                    r.EndDate
+                ))
+            .ToListAsync();
     }
 }

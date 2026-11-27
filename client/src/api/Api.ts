@@ -88,6 +88,14 @@ export interface RejectHolidayRequest {
   reason?: string;
 }
 
+export interface TeamHolidayCalendarItem {
+  userName?: string;
+  /** @format date */
+  startDate?: string;
+  /** @format date */
+  endDate?: string;
+}
+
 export interface ScheduleVersion {
   /** @format date */
   effectiveFrom?: string | null;
@@ -610,6 +618,23 @@ export class Api<
         path: `/api/holiday-requests/${id}/cancel-approved`,
         method: "POST",
         secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestGetCalendar
+     * @request GET:/api/holiday-requests/calendar
+     * @secure
+     */
+    holidayRequestGetCalendar: (params: RequestParams = {}) =>
+      this.request<TeamHolidayCalendarItem[], any>({
+        path: `/api/holiday-requests/calendar`,
+        method: "GET",
+        secure: true,
+        format: "json",
         ...params,
       }),
   };

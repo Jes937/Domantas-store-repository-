@@ -13,6 +13,7 @@ import "./index.css";
 import {RequireLogin} from "@/RequireLogin.tsx";
 import { ComingSoonPage } from "./pages/ComingSoonPage";
 import { PolicyPage } from "./pages/PolicyPage";
+import { TeamCalendarPage } from "./pages/TeamCalendarPage.tsx";
 
 //All routes in the app. Pages that need a login go inside RequireLogin
 const router = createBrowserRouter([
@@ -36,7 +37,7 @@ const router = createBrowserRouter([
 
                     { path: "my-requests", element: <MyRequestsPage />},
 
-                    { path: "team-calendar", element: <ComingSoonPage title="Team calendar" description="See who is away and how many are at work each day." /> },
+                    { path: "team-calendar", element: <TeamCalendarPage /> },
 
                     { path: "rules", element: <ComingSoonPage title="Global rules" description="Public holidays, company days off and the rules that apply to everyone." /> },
 
