@@ -61,6 +61,10 @@ export function MyRequestsPage() {
         await loadRequests();
     }
 
+    function hasStarted(startDate?: string) {
+        return !!startDate && startDate <= new Date().toLocaleDateString("sv-SE");
+    }
+
     return (
         <section>
             <div className="page-header">
@@ -134,7 +138,7 @@ export function MyRequestsPage() {
                                             : "Unknown"}
                                     </span>
 
-                                    {request.status === RequestStatus.Pending && (
+                                    {request.status === RequestStatus.Pending && !hasStarted(request.startDate) && (
                                         <button
                                             type="button"
                                             className="btn"
@@ -147,10 +151,8 @@ export function MyRequestsPage() {
                                         </button>
                                     )}
 
-                                    {request.status === RequestStatus.Approved && (
-                                        <small>
-                                            Contact an accountant to cancell this request.
-                                        </small>
+                                    {request.status === RequestStatus.Pending && hasStarted(request.startDate) && (
+                                        <small>This holiday has started and can't be cancelled.</small>
                                     )}
                                 </div>
                             </li>

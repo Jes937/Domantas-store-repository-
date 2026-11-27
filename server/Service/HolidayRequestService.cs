@@ -149,8 +149,14 @@ public async Task<List<HolidayRequestSummary>> GetOwnAsync(string userId)
 
 public async Task CancelAsync(string requestId, string userId)
 {
+    var today = DateOnly.FromDateTime(DateTime.Today);
+
+    // One update that checks owner, status and that the holiday has not started
     var updated = await db.GetTable<HolidayRequestDB>()
-        .Where(x => x.RequestId == requestId && x.UserId == userId && x.Status == RequestStatus.Pending)
+        .Where(x => x.RequestId == requestId
+                    && x.UserId == userId
+                    && x.Status == RequestStatus.Pending
+                    && x.StartDate > today)
         .Set(x => x.Status, RequestStatus.Cancelled)
         .UpdateAsync();
 
@@ -162,6 +168,9 @@ public async Task CancelAsync(string requestId, string userId)
 
     if (request == null)
         throw new ArgumentException("Request not found");
+
+    if (request.Status == RequestStatus.Pending && request.StartDate <= today)
+        throw new InvalidOperationException("This holiday has already started and can't be cancelled.");
 
     throw new InvalidOperationException(request.Status switch
     {
@@ -183,12 +192,26 @@ public async Task CancelApprovedAsync(string requestId)
         throw new ArgumentException(
             "Only approved requests can be cancelled.");
 
+    var today = DateOnly.FromDateTime(DateTime.Today);
+
+    // Holiday that has started can't be cancelled, not even by the accountant
+    if (request.StartDate <= today)
+        throw new ArgumentException(
+            "This holiday has already started and can't be cancelled.");
+
     await using var transaction = await db.BeginTransactionAsync();
 
-    await db.GetTable<HolidayRequestDB>()
-        .Where(x => x.RequestId == requestId)
+    // Only changes the row if it is still approved and has not started,
+    // so the hours can't be given back twice
+    var updated = await db.GetTable<HolidayRequestDB>()
+        .Where(x => x.RequestId == requestId
+                    && x.Status == RequestStatus.Approved
+                    && x.StartDate > today)
         .Set(x => x.Status, RequestStatus.Cancelled)
         .UpdateAsync();
+
+    if (updated == 0)
+        throw new ArgumentException("Request not found or already cancelled");
 
     await db.InsertAsync(new LedgerEntriesDB
     {

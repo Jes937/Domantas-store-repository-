@@ -90,12 +90,20 @@ export function ApprovalsPage() {
         }
     }
 
-    async function cancelApproved(id: string) {
+    async function cancelApproved(r: PendingRequest) {
+        const message =
+            `Cancel the approved holiday for ${r.userName}?\n\n` +
+            `${r.startDate} – ${r.endDate} (${(r.hours ?? 0).toFixed(2)} hours)\n\n` +
+            `The employee would have to apply again.`;
+
+        // Stop here if the accountant presses Cancel in the popup
+        if (!window.confirm(message)) return;
+
         setBusy(true);
         setError(null);
 
         try {
-            await api.holidayRequest.holidayRequestCancelApproved(id);
+            await api.holidayRequest.holidayRequestCancelApproved(r.requestId!);
             await load();
         } catch (err) {
             setError(await errorText(err, "Could not cancel holiday."));
@@ -206,9 +214,7 @@ export function ApprovalsPage() {
                                     <button
                                         className="btn"
                                         disabled={busy}
-                                        onClick={() =>
-                                            cancelApproved(r.requestId!)
-                                        }
+                                        onClick={() => cancelApproved(r)}
                                     >
                                         Cancel holiday
                                     </button>
