@@ -1,5 +1,7 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { getCurrentUser } from "../auth";
+import { HolidayYearCard}  from "./HolidayYearCard";
+import { TopBar } from "./TopBar";
 
 // Shared layout: dark sidebar on the left, the current page on the right
 export function Layout() {
@@ -54,6 +56,8 @@ export function Layout() {
                     <span className="sidebar-label">My holiday</span>
                     <NavLink to="/" end className="sidebar-link">Overview</NavLink>
                     <NavLink to="/apply" className="sidebar-link">Apply for holiday</NavLink>
+                    <NavLink to="/my-requests" className="sidebar-link">My requests</NavLink>
+                    <NavLink to="/team-calendar" className="sidebar-link">Team calendar</NavLink>
 
                     {(isAccountant || isSystemOwner) && (
                         <>
@@ -61,11 +65,15 @@ export function Layout() {
                                 {isSystemOwner ? "System" : "Accounting"}
                             </span>
                             <NavLink to="/employees" className="sidebar-link">Employees</NavLink>
+                            {isAccountant && <NavLink to="/approvals" className="sidebar-link">Approve holiday</NavLink>}
+                            {isSystemOwner && <NavLink to="/rules" className="sidebar-link">Global rules</NavLink>}
                         </>
                     )}
                 </nav>
 
                 <div className="sidebar-bottom">
+                    <HolidayYearCard />
+                    <NavLink to="/policy" className="sidebar-link">Holiday policy</NavLink>
                     <div className="sidebar-user">
                         <span className="avatar">{initials}</span>
                         <span className="user-text">
@@ -79,10 +87,13 @@ export function Layout() {
                 </div>
             </aside>
 
-            <main className="app-main">
-                {/* The current page is shown here */}
-                <Outlet />
-            </main>
+            <div className="app-content">
+                <TopBar />
+                <main className="app-main">
+                    {/* The current page is shown here */}
+                    <Outlet />
+                </main>
+            </div>
         </div>
     );
 }

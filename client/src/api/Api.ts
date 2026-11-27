@@ -20,7 +20,7 @@ export enum RequestStatus {
   Pending = 0,
   Approved = 1,
   Rejected = 2,
-  Canceled = 3,
+  Cancelled = 3,
 }
 
 export enum HolidayAccount {
@@ -35,6 +35,14 @@ export interface LoginResponse {
 export interface LoginRequest {
   email?: string;
   password?: string;
+}
+
+export interface AccountBalance {
+  account?: HolidayAccount;
+  /** @format decimal */
+  hours?: number;
+  /** @format date */
+  expiresOn?: string | null;
 }
 
 export interface HealthResponse {
@@ -53,6 +61,7 @@ export interface HolidayRequestSummary {
   /** @format decimal */
   hours?: number;
   status?: RequestStatus;
+  reason?: string | null;
 }
 
 export interface CreateHolidayRequest {
@@ -61,6 +70,22 @@ export interface CreateHolidayRequest {
   /** @format date */
   endDate?: string;
   account?: HolidayAccount;
+}
+
+export interface PendingRequest {
+  requestId?: string;
+  userName?: string;
+  /** @format date */
+  startDate?: string;
+  /** @format date */
+  endDate?: string;
+  account?: HolidayAccount;
+  /** @format decimal */
+  hours?: number;
+}
+
+export interface RejectHolidayRequest {
+  reason?: string;
 }
 
 export interface ScheduleVersion {
@@ -401,6 +426,31 @@ export class Api<
         ...params,
       }),
   };
+  balance = {
+    /**
+     * No description
+     *
+     * @tags Balance
+     * @name BalanceGet
+     * @request GET:/api/balance
+     * @secure
+     */
+    balanceGet: (
+      query?: {
+        /** @format date */
+        date?: string | null;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AccountBalance[], any>({
+        path: `/api/balance`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+  };
   health = {
     /**
      * No description
@@ -439,6 +489,94 @@ export class Api<
         secure: true,
         type: ContentType.Json,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestGetPending
+     * @request GET:/api/holiday-requests/pending
+     * @secure
+     */
+    holidayRequestGetPending: (params: RequestParams = {}) =>
+      this.request<PendingRequest[], any>({
+        path: `/api/holiday-requests/pending`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestApprove
+     * @request POST:/api/holiday-requests/{id}/approve
+     * @secure
+     */
+    holidayRequestApprove: (id: string, params: RequestParams = {}) =>
+      this.request<Blob, any>({
+        path: `/api/holiday-requests/${id}/approve`,
+        method: "POST",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestReject
+     * @request POST:/api/holiday-requests/{id}/reject
+     * @secure
+     */
+    holidayRequestReject: (
+      id: string,
+      data: RejectHolidayRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<Blob, any>({
+        path: `/api/holiday-requests/${id}/reject`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestGetMine
+     * @request GET:/api/holiday-requests/mine
+     * @secure
+     */
+    holidayRequestGetMine: (params: RequestParams = {}) =>
+      this.request<HolidayRequestSummary[], any>({
+        path: `/api/holiday-requests/mine`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags HolidayRequest
+     * @name HolidayRequestCancel
+     * @request POST:/api/holiday-requests/{id}/cancel
+     * @secure
+     */
+    holidayRequestCancel: (id: string, params: RequestParams = {}) =>
+      this.request<Blob, any>({
+        path: `/api/holiday-requests/${id}/cancel`,
+        method: "POST",
+        secure: true,
         ...params,
       }),
   };

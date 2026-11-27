@@ -72,6 +72,9 @@ There are three roles. Every person has an Employee account. There is exactly on
 | `GET /api/Health` | Everyone |
 | `GET /api/weeks` | Logged in users |
 | `POST /api/holiday-requests` | Logged in users (always for themselves) |
+| `GET /api/balance` (+ `?date=` for a future date) | Logged in users (always their own) |
+| `GET /api/holiday-requests/pending` | Accountant |
+| `POST /api/holiday-requests/{id}/approve` / `reject` | Accountant |
 | `GET /api/users/{userId}/schedule` (+ `/history`) | The user themself, Accountant, System owner |
 | `PUT` / `DELETE /api/users/{userId}/schedule/{effectiveFrom}` | Accountant, System owner |
 | `GET /api/users` | Accountant, System owner |
@@ -91,3 +94,33 @@ Each test user also gets a full time work schedule (Mon-Thu 7.5, Fri 7 = 37 hour
 | employee@businessesbjerg.com | Employee |
 | accountant@businessesbjerg.com | Accountant |
 | owner@businessesbjerg.com | System owner |
+
+
+## UI guide (frontend)
+
+All pages follow the design in `docs/Holiday Planner modern app concept.pdf`.
+Use the shared classes in `client/src/index.css` instead of writing your own colours or buttons.
+
+### Colours
+Use the CSS variables, never hard-coded colours:
+`var(--accent)`, `var(--accent-dark)`, `var(--text)`, `var(--text-muted)`, `var(--bg)`, `var(--surface)`, `var(--border)`, `var(--danger)`, `var(--success)`.
+
+### Shared classes
+| Class | Use it for |
+|---|---|
+| `page-header` | The page title (`h1`) with a short line of text under it |
+| `card` | A white box around a section |
+| `table` | Tables (put it inside a `card` with `padding: 0`) |
+| `btn` / `btn btn-primary` | Quiet button / main blue button |
+| `field` | A form field: `label` on top, `input` or `select` below |
+| `alert` | A red error message |
+| `badge badge-pending` / `badge-approved` / `badge-rejected` / `badge-neutral` | Status labels |
+
+### Add a new page
+1. Create `client/src/pages/MyPage.tsx` and start it with a `page-header`.
+2. Add a route in `client/src/App.tsx`, inside `RequireLogin` if a login is needed.
+3. Add a `NavLink` with `className="sidebar-link"` in `client/src/components/Layout.tsx`, under the right role section.
+4. If the page is planned but not built yet, use `ComingSoonPage` in `App.tsx` and swap it for the real page later.
+
+### Planned pages (placeholders)
+`/my-requests`, `/team-calendar` and `/rules` currently show `ComingSoonPage`. Replace them in `App.tsx` when the feature is built.

@@ -50,21 +50,18 @@ function getHoursOn(versions: Version[], date: Date) {
     return version.hours[weekday] ?? 0;
 }
 
-const gridCell = {
-    border: "1px solid #999",
-    padding: "10px 14px",
-    textAlign: "center",
-} as const;
+const weekdayName = (day: Date) => day.toLocaleDateString("en-GB", { weekday: "short" });
+const isWeekend = (day: Date) => day.getDay() === 0 || day.getDay() === 6;
 
 function WeekPicker({ first, last, onMove }: { first: Date; last: Date; onMove: (weeks: number) => void }) {
     const format = (d: Date) =>
         d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
     return (
-        <div>
-            <button type="button" onClick={() => onMove(-1)}>←</button>
-            <h2>{format(first)} – {format(last)}</h2>
-            <button type="button" onClick={() => onMove(1)}>→</button>
+        <div className="week-picker">
+            <button type="button" className="btn" aria-label="Previous week" onClick={() => onMove(-1)}>←</button>
+            <span className="week-picker-label">{format(first)} – {format(last)}</span>
+            <button type="button" className="btn" aria-label="Next week" onClick={() => onMove(1)}>→</button>
         </div>
     );
 }
@@ -72,24 +69,31 @@ function WeekPicker({ first, last, onMove }: { first: Date; last: Date; onMove: 
 function HeaderRow({ days }: { days: Date[] }) {
     return (
         <tr>
-            <th style={{ ...gridCell, textAlign: "left" }}>Employees</th>
+            <th>Employee</th>
             {days.map(day => (
-                <th key={toIsoDate(day)} style={gridCell}>
-                    <div>{day.toLocaleDateString("en-GB", { weekday: "short" })}</div>
-                    <div>{day.getDate()}</div>
+                <th key={toIsoDate(day)} className={isWeekend(day) ? "week-cell weekend" : "week-cell"}>
+                    <span className="week-day">{weekdayName(day)}</span>
+                    <span className="week-date">{day.getDate()}</span>
                 </th>
             ))}
+            <th className="week-cell">Total</th>
         </tr>
     );
 }
 
 function EmployeeRow({ employee, versions, days }: { employee: UserSummary; versions: Version[]; days: Date[] }) {
+    const hours = days.map(day => getHoursOn(versions, day));
+    const total = hours.reduce((sum, h) => sum + h, 0);
+
     return (
         <tr>
-            <td style={{ ...gridCell, textAlign: "left", whiteSpace: "nowrap" }}>{employee.userName}</td>
-            {days.map(day => (
-                <td key={toIsoDate(day)} style={gridCell}>{getHoursOn(versions, day) || ""}</td>
+            <td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{employee.userName}</td>
+            {days.map((day, i) => (
+                <td key={toIsoDate(day)} className={isWeekend(day) ? "week-cell weekend" : "week-cell"}>
+                    {hours[i] ? <span className="week-hours">{hours[i]}</span> : <span className="week-empty">–</span>}
+                </td>
             ))}
+            <td className="week-cell week-total">{total ? `${total} h` : "–"}</td>
         </tr>
     );
 }
@@ -125,27 +129,35 @@ function EmployeesCalendar({ employees }: { employees: UserSummary[] }) {
     const days = getWeekDays(monday);
 
     return (
-        <section>
-            <WeekPicker
-                first={monday}
-                last={new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6)}
-                onMove={moveWeek}
-            />
-            <table style={{ borderCollapse: "collapse", width: "100%" }}>
-                <thead>
-                <HeaderRow days={days} />
-                </thead>
-                <tbody>
-                {employees.map(employee => (
-                    <EmployeeRow
-                        key={employee.userId}
-                        employee={employee}
-                        versions={schedules[employee.userId!] ?? []}
-                        days={days}
-                    />
-                ))}
-                </tbody>
-            </table>
+        <section className="card" style={{ marginTop: 20, padding: 0, overflow: "hidden" }}>
+            <div className="week-header">
+                <div>
+                    <h2 style={{ margin: 0 }}>Work schedules this week</h2>
+                    <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Hours per day for everyone</span>
+                </div>
+                <WeekPicker
+                    first={monday}
+                    last={new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6)}
+                    onMove={moveWeek}
+                />
+            </div>
+            <div style={{ overflowX: "auto" }}>
+                <table className="table">
+                    <thead>
+                    <HeaderRow days={days} />
+                    </thead>
+                    <tbody>
+                    {employees.map(employee => (
+                        <EmployeeRow
+                            key={employee.userId}
+                            employee={employee}
+                            versions={schedules[employee.userId!] ?? []}
+                            days={days}
+                        />
+                    ))}
+                    </tbody>
+                </table>
+            </div>
         </section>
     );
 }
@@ -155,7 +167,11 @@ export function EmployeesPage() {
     const [error, setError] = useState<string | null>(null);
     const [panelOpen, setPanelOpen] = useState(false);
     const [notice, setNotice] = useState<string | null>(null);
-    const isSystemOwner = getCurrentUser()?.role === "SystemOwner";
+
+    const currentRole = getCurrentUser()?.role;
+
+    const isSystemOwner = currentRole === "SystemOwner";
+    const isEmployee = currentRole === "Employee";
 
     useEffect(() => {
         api.user.userGetAll()
@@ -168,28 +184,45 @@ export function EmployeesPage() {
             });
     }, []);
 
-    // Called by the panel when the API has created the employee
+    // Called by the panel when the API
     function handleCreated(user: UserSummary) {
         setPanelOpen(false);
         setNotice(`${user.userName} is created and can log in as ${user.email}.`);
-        // Add the new person to the list, so we don't have to reload the page
+        // Add the new person to the list
         setEmployees(previous => [...previous, user]);
     }
 
     return (
         <section>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 16 }}>
-                <div className="page-header">
-                    <h1>Employees</h1>
-                    <p>Everyone with an account at Business Esbjerg. Open a person to see their work schedule.</p>
-                </div>
+            <div
+                style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "flex-end",
+                    justifyContent: "space-between",
+                    gap: 16
+                }}
+            >
                 {isSystemOwner && (
-                    <button className="btn btn-primary" style={{ marginBottom: 24 }} onClick={() => setPanelOpen(true)}>
+                    <div className="page-header">
+                        <h1>Employees</h1>
+                        <p>
+                            Everyone with an account at Business Esbjerg.
+                            Open a person to see their work schedule.
+                        </p>
+                    </div>
+                )}
+
+                {isSystemOwner && (
+                    <button
+                        className="btn btn-primary"
+                        style={{ marginBottom: 24 }}
+                        onClick={() => setPanelOpen(true)}
+                    >
                         + Add employee
                     </button>
                 )}
             </div>
-
             {notice && (
                 <p className="badge badge-approved" role="status"
                    style={{ display: "block", padding: "10px 12px", borderRadius: 10, fontSize: 14, marginBottom: 16 }}>
@@ -199,7 +232,7 @@ export function EmployeesPage() {
 
             {error && <p className="alert" role="alert">{error}</p>}
 
-            {!error && (
+            {!error && !isEmployee && (
                 <div className="card" style={{ padding: 0, overflowX: "auto" }}>
                     <table className="table">
                         <thead>

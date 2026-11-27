@@ -30,4 +30,72 @@ public class HolidayRequestController(HolidayRequestService holidayRequestServic
             return BadRequest(ex.Message);
         }
     }
+    
+    [HttpGet("pending")]
+    [Authorize(Roles = "Accountant")]
+    public async Task<ActionResult<List<PendingRequest>>> GetPending()
+    {
+        return Ok(await holidayRequestService.GetPendingAsync());
+    }
+
+    [HttpPost("{id}/approve")]
+    [Authorize(Roles = "Accountant")]
+    public async Task<IActionResult> Approve(string id)
+    {
+        try
+        {
+            await holidayRequestService.ApproveAsync(id, CurrentUserId);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+[HttpPost("{id}/reject")]
+[Authorize(Roles = "Accountant")]
+public async Task<IActionResult> Reject(
+    string id,
+    RejectHolidayRequest request)
+{
+    try
+    {
+        await holidayRequestService.RejectAsync(
+            id,
+            CurrentUserId,
+            request.Reason
+        );
+
+        return NoContent();
+    }
+    catch (ArgumentException ex)
+    {
+        return BadRequest(ex.Message);
+    }
+}
+
+    [HttpGet("mine")]
+    public async Task<ActionResult<List<HolidayRequestSummary>>> GetMine()
+    {
+        return Ok(await holidayRequestService.GetOwnAsync(CurrentUserId));
+    }
+
+    [HttpPost("{id}/cancel")]
+    public async Task<IActionResult> Cancel(string id)
+    {
+        try
+        {
+            await holidayRequestService.CancelAsync(id, CurrentUserId);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }

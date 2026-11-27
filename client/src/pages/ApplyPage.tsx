@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router";
 import { api } from "../api/client";
 import { HolidayAccount } from "../api/Api";
 
@@ -8,17 +9,21 @@ export function ApplyPage() {
     const [account, setAccount] = useState(HolidayAccount.Week1To5);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [busy, setBusy] = useState(false);
 
     async function handleSubmit(e: FormEvent) {
         e.preventDefault();
         setMessage(null);
         setError(null);
+        setBusy(true);
 
         try {
             const res = await api.holidayRequest.holidayRequestCreate({ startDate, endDate, account });
-            setMessage(`Sent! ${res.data.hours} hours, waiting for approval.`);
+            setMessage(`Sent! ${Number(res.data.hours).toFixed(2)} hours, waiting for approval.`);
         } catch (err) {
             setError(err instanceof Response ? await err.text() : "Something went wrong.");
+        } finally {
+            setBusy(false);
         }
     }
 
@@ -39,7 +44,7 @@ export function ApplyPage() {
 
                 <div className="field">
                     <label htmlFor="endDate">Last day</label>
-                    <input id="endDate" type="date" value={endDate}
+                    <input id="endDate" type="date" value={endDate} min={startDate}
                            onChange={(e) => setEndDate(e.target.value)} required />
                 </div>
 
@@ -53,9 +58,15 @@ export function ApplyPage() {
                 </div>
 
                 {error && <p className="alert" role="alert">{error}</p>}
-                {message && <p role="status">{message}</p>}
+                {message && (
+                    <p role="status">
+                        {message} <Link to="/my-requests">See my requests</Link>
+                    </p>
+                )}
 
-                <button type="submit" className="btn btn-primary">Apply</button>
+                <button type="submit" className="btn btn-primary" disabled={busy}>
+                    {busy ? "Sending…" : "Apply"}
+                </button>
             </form>
         </section>
     );

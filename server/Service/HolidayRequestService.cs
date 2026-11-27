@@ -58,4 +58,116 @@ public class HolidayRequestService(UserDataBase db)
         return new HolidayRequestSummary(
             row.RequestId, row.StartDate, row.EndDate, row.Account, row.Hours, row.Status);
     }
+    
+    public async Task<List<PendingRequest>> GetPendingAsync()
+    {
+        return await (
+                from r in db.GetTable<HolidayRequestDB>()
+                join u in db.GetTable<UserDB>() on r.UserId equals u.UserId
+                where r.Status == RequestStatus.Pending
+                orderby r.StartDate
+                select new PendingRequest(r.RequestId, u.UserName, r.StartDate, r.EndDate, r.Account, r.Hours))
+            .ToListAsync();
+    }
+    
+  public async Task ApproveAsync(string requestId, string accountantId)
+  {
+      var request = await GetPendingRequest(requestId);
+
+      await using var transaction = await db.BeginTransactionAsync();
+
+      var updated = await db.GetTable<HolidayRequestDB>()
+          .Where(x => x.RequestId == requestId && x.Status == RequestStatus.Pending)
+          .Set(x => x.Status, RequestStatus.Approved)
+          .Set(x => x.DecidedBy, accountantId)
+          .Set(x => x.Decided, DateTime.UtcNow)
+          .UpdateAsync();
+
+      if (updated == 0)
+          throw new ArgumentException("Request not found or already decided");
+
+      await db.InsertAsync(new LedgerEntriesDB
+      {
+          EntryId = Guid.NewGuid().ToString(),
+          UserId = request.UserId,
+          Account = request.Account,
+          EntryType = LedgerEntryType.Taken,
+          Hours = -request.Hours,
+          EntryDate = DateOnly.FromDateTime(DateTime.Today),
+          RequestId = request.RequestId
+      });
+
+      await transaction.CommitAsync();
+  }
+    
+public async Task RejectAsync(string requestId, string accountantId, string reason)
+{
+    ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+
+    if (reason.Trim().Length > 500)
+        throw new ArgumentException("The reason can be at most 500 characters.");
+
+    var updated = await db.GetTable<HolidayRequestDB>()
+        .Where(x => x.RequestId == requestId && x.Status == RequestStatus.Pending)
+        .Set(x => x.Status, RequestStatus.Rejected)
+        .Set(x => x.DecidedBy, accountantId)
+        .Set(x => x.Decided, DateTime.UtcNow)
+        .Set(x => x.DecisionNote, reason.Trim())
+        .UpdateAsync();
+
+    if (updated == 0)
+        throw new ArgumentException("Request not found or already decided");
+}
+    private async Task<HolidayRequestDB> GetPendingRequest(string requestId)
+    {
+        var request = await db.GetTable<HolidayRequestDB>()
+            .FirstOrDefaultAsync(x => x.RequestId == requestId);
+
+        if (request == null || request.Status != RequestStatus.Pending)
+            throw new ArgumentException("Request not found or already decided");
+
+        return request;
+    }
+public async Task<List<HolidayRequestSummary>> GetOwnAsync(string userId)
+{
+    var rows = await db.GetTable<HolidayRequestDB>()
+        .Where(x => x.UserId == userId)
+        .OrderByDescending(x => x.StartDate)
+        .ToListAsync();
+
+    return rows
+        .Select(x => new HolidayRequestSummary(
+            x.RequestId,
+            x.StartDate,
+            x.EndDate,
+            x.Account,
+            x.Hours,
+            x.Status,
+            x.Status == RequestStatus.Rejected ? x.DecisionNote : null))
+        .ToList();
+}
+
+public async Task CancelAsync(string requestId, string userId)
+{
+    var updated = await db.GetTable<HolidayRequestDB>()
+        .Where(x => x.RequestId == requestId && x.UserId == userId && x.Status == RequestStatus.Pending)
+        .Set(x => x.Status, RequestStatus.Cancelled)
+        .UpdateAsync();
+
+    if (updated > 0)
+        return;
+
+    var request = await db.GetTable<HolidayRequestDB>()
+        .FirstOrDefaultAsync(x => x.RequestId == requestId && x.UserId == userId);
+
+    if (request == null)
+        throw new ArgumentException("Request not found");
+
+    throw new InvalidOperationException(request.Status switch
+    {
+        RequestStatus.Approved => "Approved holiday can't be cancelled here. Ask the accountant to cancel it.",
+        RequestStatus.Cancelled => "This request is already cancelled.",
+        _ => "This request has already been decided."
+    });
+}
 }

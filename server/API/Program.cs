@@ -5,12 +5,14 @@ using LinqToDB.Data;
 using Security.Services.Security;
 using Service;
 using LoginApi.Services;
+using API.Jobs;
+using Service.Holiday;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Database
 var dbOptions = new DataOptions().UseSQLite(
-    Environment.GetEnvironmentVariable("DB") ?? "Data Source=holiday.db");
+    builder.Configuration["DB"] ?? "Data Source=holiday.db");
 
 builder.Services.AddSingleton(new DataOptions<UserDataBase>(dbOptions));
 builder.Services.AddScoped<UserDataBase>();
@@ -24,6 +26,9 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WorkScheduleService>();
 builder.Services.AddScoped<HolidayRequestService>();
 builder.Services.AddScoped<HolidaysService>();
+builder.Services.AddScoped<AccrualService>();
+builder.Services.AddScoped<BalanceService>();
+builder.Services.AddHostedService<AccrualJob>();
 
 // Authentication (JWT)
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(o =>
@@ -115,12 +120,14 @@ using (var scope = app.Services.CreateScope())
             db.Insert(new LedgerEntriesDB
             {
                 EntryId = Guid.NewGuid().ToString(), UserId = userId, Account = HolidayAccount.Week1To5,
-                EntryType = LedgerEntryType.Accrual, Hours = 185, EntryDate = startDate
+                EntryType = LedgerEntryType.Accrual, Hours = 185, EntryDate = startDate,
+                ExpiresOn = HolidayExpiry.ExpiresOn(HolidayAccount.Week1To5, startDate)
             });
             db.Insert(new LedgerEntriesDB
             {
                 EntryId = Guid.NewGuid().ToString(), UserId = userId, Account = HolidayAccount.Week6,
-                EntryType = LedgerEntryType.Accrual, Hours = 37, EntryDate = startDate
+                EntryType = LedgerEntryType.Accrual, Hours = 37, EntryDate = startDate,
+                ExpiresOn = HolidayExpiry.ExpiresOn(HolidayAccount.Week6, startDate)
             });
         }
     }
