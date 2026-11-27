@@ -25,4 +25,11 @@ public class HolidayExpiryTests
         Assert.Equal(new DateOnly(2028, 4, 30),
             HolidayExpiry.ExpiresOn(HolidayAccount.Week6, new DateOnly(2026, 11, 30)));
     }
+
+    [Fact]
+    public void Week6_CanBeUsedFrom1MayTheYearAfter()
+    {
+        Assert.Equal(new DateOnly(2027, 5, 1),
+            HolidayExpiry.UsableFrom(HolidayAccount.Week6, new DateOnly(2026, 11, 30)));
+    }
 }
