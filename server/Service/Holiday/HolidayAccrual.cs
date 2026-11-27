@@ -26,7 +26,7 @@ public static class HolidayAccrual
                 .Where(s => s.EffectiveFrom <= monthEnd)
                 .MaxBy(s => s.EffectiveFrom);
 
-            if (schedule != null)
+            if (schedule != null && HolidayExpiry.UsableFrom(account, monthEnd) <= to)
                 total += MonthlyHours(schedule, account);
 
             monthEnd = monthEnd.AddDays(1).AddMonths(1).AddDays(-1);

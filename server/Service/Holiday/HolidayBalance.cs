@@ -13,7 +13,8 @@ public static class HolidayBalance
     {
         var mine = entries.Where(e => e.Account == account).ToList();
         
-        var earned = mine.Where(e => e.EntryType == LedgerEntryType.Accrual).ToList();
+        var earned = mine.Where(e => e.EntryType == LedgerEntryType.Accrual
+                                     && (onDate == null || HolidayExpiry.UsableFrom(account, e.EntryDate) <= onDate)).ToList();
         
         var used = -mine.Where(e => e.EntryType != LedgerEntryType.Accrual).Sum(e => e.Hours)
                    + requests.Where(r => r.Account == account && r.Status == RequestStatus.Pending).Sum(r => r.Hours);
