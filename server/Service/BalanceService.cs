@@ -22,13 +22,13 @@ public class BalanceService(UserDataBase db)
 
         AccountBalance ForAccount(HolidayAccount account)
         {
-            var hours = HolidayBalance.Available(account, entries, request);
+            var hours = HolidayBalance.Available(account, entries, request, onDate);
 
             if (onDate > today)
                 hours += HolidayAccrual.EarnedBetween(schedules, account, today, onDate);
             
             var expiresOn = entries
-                .Where(e => e.Account == account && e.ExpiresOn >= today)
+                .Where(e => e.Account == account && e.ExpiresOn >= onDate)
                 .Min(e => e.ExpiresOn);
             
             return new AccountBalance(account, hours, hours > 0  ? expiresOn : null);

@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { RequestStatus } from "../api/Api";
 import type { HolidayRequestSummary } from "../api/Api";
 
-// Shows the server's message when it sends one
 async function errorText(err: unknown, fallback: string) {
     return err instanceof Response ? await err.text() : fallback;
 }
@@ -22,7 +21,8 @@ export function MyRequestsPage() {
 
     async function loadRequests() {
         try {
-            const response = await api.holidayRequest.holidayRequestGetMine();
+            const response =
+                await api.holidayRequest.holidayRequestGetMine();
 
             setRequests(response.data);
             setError(null);
@@ -36,17 +36,24 @@ export function MyRequestsPage() {
     async function cancel(request: HolidayRequestSummary) {
         const period = `${request.startDate} - ${request.endDate}`;
 
-        if (!window.confirm(`Cancel your request for ${period}?`)) return;
+        if (!window.confirm(`Cancel your request for ${period}?`)) {
+            return;
+        }
 
         setCancellingId(request.requestId ?? null);
         setActionError(null);
         setNotice(null);
 
         try {
-            await api.holidayRequest.holidayRequestCancel(request.requestId!);
+            await api.holidayRequest.holidayRequestCancel(
+                request.requestId!
+            );
+
             setNotice(`The request for ${period} is cancelled.`);
         } catch (err) {
-            setActionError(await errorText(err, "Could not cancel the request."));
+            setActionError(
+                await errorText(err, "Could not cancel the request.")
+            );
         } finally {
             setCancellingId(null);
         }
@@ -70,8 +77,17 @@ export function MyRequestsPage() {
                     </div>
                 )}
 
-                {actionError && <p className="alert" role="alert">{actionError}</p>}
-                {notice && <p role="status">{notice}</p>}
+                {actionError && (
+                    <p className="alert" role="alert">
+                        {actionError}
+                    </p>
+                )}
+
+                {notice && (
+                    <p role="status">
+                        {notice}
+                    </p>
+                )}
 
                 {!loading && !error && requests.length === 0 && (
                     <p>No holiday requests found.</p>
@@ -98,12 +114,20 @@ export function MyRequestsPage() {
 
                                     {request.reason && (
                                         <div>
-                                            <strong>Reason:</strong> {request.reason}
+                                            <strong>Reason:</strong>{" "}
+                                            {request.reason}
                                         </div>
                                     )}
                                 </div>
 
-                                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "flex-end",
+                                        gap: 8,
+                                    }}
+                                >
                                     <span>
                                         {request.status !== undefined
                                             ? RequestStatus[request.status]
@@ -117,8 +141,16 @@ export function MyRequestsPage() {
                                             disabled={cancellingId !== null}
                                             onClick={() => cancel(request)}
                                         >
-                                            {cancellingId === request.requestId ? "Cancelling…" : "Cancel request"}
+                                            {cancellingId === request.requestId
+                                                ? "Cancelling..."
+                                                : "Cancel request"}
                                         </button>
+                                    )}
+
+                                    {request.status === RequestStatus.Approved && (
+                                        <small>
+                                            Contact an accountant to cancell this request.
+                                        </small>
                                     )}
                                 </div>
                             </li>
