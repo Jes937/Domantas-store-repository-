@@ -120,4 +120,10 @@ public async Task<IActionResult> CancelApproved(string id)
         return BadRequest(ex.Message);
     }
 }
+
+[HttpGet("calendar")]
+public async Task<ActionResult<List<TeamHolidayCalendarItem>>> GetCalendar()
+{
+    return Ok(await holidayRequestService.GetCalendarAsync());
+}
 }
