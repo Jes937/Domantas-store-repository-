@@ -7,7 +7,7 @@ public record CreateHolidayRequest(
     [Required] DateOnly StartDate,
     [Required] DateOnly EndDate,
     [Required] HolidayAccount Account);
-    
+
 public record HolidayRequestSummary(
     string RequestId,
     DateOnly StartDate,
@@ -24,6 +24,12 @@ public record PendingRequest(
     DateOnly EndDate,
     HolidayAccount Account,
     decimal Hours);
+
+public record TeamHolidayCalendarItem(
+    string UserName,
+    DateOnly StartDate,
+    DateOnly EndDate
+);
 
 public record RejectHolidayRequest(
     string Reason
