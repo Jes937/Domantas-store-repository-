@@ -35,6 +35,10 @@ public class HolidayRequestService(UserDataBase db)
         var requests = await db.GetTable<HolidayRequestDB>()
             .Where(x => x.UserId == userId)
             .ToListAsync();
+        
+        if (requests.Any(r => (r.Status == RequestStatus.Pending || r.Status == RequestStatus.Approved)
+                              && r.StartDate <= request.EndDate && request.StartDate <= r.EndDate))
+            throw new ArgumentException("You have already applied for some of these days");
 
         var available = HolidayBalance.Available(request.Account, entries, requests, request.StartDate);
 
