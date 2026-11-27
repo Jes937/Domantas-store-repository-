@@ -15,4 +15,9 @@ public class HolidayExpiry
 
         return new DateOnly(holidayYearStart + 1, 12, 31);
     }
+    
+    public static DateOnly UsableFrom(HolidayAccount account, DateOnly earnedOn) =>
+        account == HolidayAccount.Week6
+            ? new DateOnly(earnedOn.Year + 1, 5, 1)
+            : earnedOn;
 }
