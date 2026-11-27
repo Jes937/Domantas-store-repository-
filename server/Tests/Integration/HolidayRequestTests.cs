@@ -11,7 +11,15 @@ public class HolidayRequestTests : IClassFixture<ApiFactory>
 {
     private readonly HttpClient _client;
     
-    private static readonly DateOnly Monday = new(2030, 1, 7);
+    private static readonly DateOnly Monday = NextMonday();
+    
+    private static DateOnly NextMonday()
+    {
+        var day = DateOnly.FromDateTime(DateTime.Today).AddDays(14);
+        while (day.DayOfWeek != DayOfWeek.Monday)
+            day = day.AddDays(1);
+        return day;
+    }
 
     public HolidayRequestTests(ApiFactory factory)
     {
@@ -65,8 +73,7 @@ public class HolidayRequestTests : IClassFixture<ApiFactory>
     public async Task Apply_MoreThanBalance_Returns400()
     {
         await LoginAsEmployee();
-
-        // Two weeks (74 hours) on Week 6, but there are only 37 hours
+        
         var response = await _client.PostAsJsonAsync("/api/holiday-requests",
             new CreateHolidayRequest(Monday, Monday.AddDays(11), HolidayAccount.Week6));
 
